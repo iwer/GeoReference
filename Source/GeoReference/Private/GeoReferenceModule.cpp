@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "GeoReference.h"
+#include "GeoReferenceModule.h"
 
 #define LOCTEXT_NAMESPACE "FGeoReferenceModule"
 
@@ -16,5 +16,5 @@ void FGeoReferenceModule::ShutdownModule()
 }
 
 #undef LOCTEXT_NAMESPACE
-	
+
 IMPLEMENT_MODULE(FGeoReferenceModule, GeoReference)
