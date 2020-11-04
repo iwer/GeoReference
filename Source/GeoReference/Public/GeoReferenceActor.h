@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GeoRegion.h"
+#include "ROI.h"
 #include "GeoReferenceActor.generated.h"
 
 UCLASS()
@@ -16,8 +16,8 @@ public:
 	// Sets default values for this actor's properties
 	AGeoReferenceActor();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FGeoRegion Region;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	URegionOfInterest * ROI;
 
     UFUNCTION(BlueprintCallable)
     FVector ToGameCoordinate(FVector geocoordinate);

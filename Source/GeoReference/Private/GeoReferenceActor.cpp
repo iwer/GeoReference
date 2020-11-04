@@ -9,7 +9,7 @@ AGeoReferenceActor::AGeoReferenceActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
+	ROI = CreateDefaultSubobject<URegionOfInterest>(FName(TEXT("RegionOfInterest")));
 }
 
 // Called when the game starts or when spawned
@@ -29,7 +29,7 @@ void AGeoReferenceActor::Tick(float DeltaTime)
 
 FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
 {
-    return FGeoReference::ToGameCoordinate(geocoordinate.X, geocoordinate.Y, Region.West, Region.North, Region.South);
+	return FGeoReference::ToGameCoordinate(geocoordinate.X, geocoordinate.Y, ROI);
 }
 
 FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
