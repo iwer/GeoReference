@@ -3,7 +3,6 @@
 
 #include "ROI.h"
 #include "GeoReference.h"
-#include "..\Public\ROI.h"
 
 
 
@@ -175,5 +174,3 @@ FString URegionOfInterest::ToString()
 		+ TEXT(";Size:") + FString::SanitizeFloat(SizeM) + TEXT(";UTMZone:") + FString::FromInt(UTMZone)
 		+ TEXT(";NorthHemi:") + (NorthernHemisphere ? TEXT("true") : TEXT("false"));
 }
-
-

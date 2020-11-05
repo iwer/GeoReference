@@ -15,7 +15,7 @@ FVector FGeoReference::ToGameCoordinate(double Longitude, double Latitude, URegi
 	return FVector(pos.X, pos.Y, 0);
 }
 
-inline bool FGeoReference::IsWGS84(OGRSpatialReferenceH ref)
+bool FGeoReference::IsWGS84(OGRSpatialReferenceH ref)
 {
 	if (OSRIsGeographic(ref)) {
 		auto geocs = OSRGetAttrValue(ref, "GEOGCS", 0);
@@ -26,7 +26,7 @@ inline bool FGeoReference::IsWGS84(OGRSpatialReferenceH ref)
 	return false;
 }
 
-inline bool FGeoReference::IsUTM(OGRSpatialReferenceH ref)
+bool FGeoReference::IsUTM(OGRSpatialReferenceH ref)
 {
 	if (OSRIsProjected(ref)) {
 		int north;
@@ -38,7 +38,7 @@ inline bool FGeoReference::IsUTM(OGRSpatialReferenceH ref)
 	return false;
 }
 
-inline void FGeoReference::GetSize(GDALDatasetRef & gdaldata, double & width, double & height)
+void FGeoReference::GetSize(GDALDatasetRef & gdaldata, double & width, double & height)
 {
 	GeoTransformRef georef = GDALHelpers::GetGeoTransform(gdaldata);
 	FVector2D srcsize = FVector2D(gdaldata->GetRasterXSize(), gdaldata->GetRasterYSize());
@@ -69,7 +69,7 @@ inline void FGeoReference::GetSize(GDALDatasetRef & gdaldata, double & width, do
 // this code is based on https://www.wavemetrics.com/code-snippet/convert-latitudelongitude-utm
 // which is attributed to Chuck Gantz
 
-inline int FGeoReference::UTMZone(double longitude, double latitude)
+int FGeoReference::UTMZone(double longitude, double latitude)
 {
 	int utmzone = floor((longitude + 180) / 6) + 1;
 
@@ -98,7 +98,7 @@ inline int FGeoReference::UTMZone(double longitude, double latitude)
 // returns 'Z' if latitude is outside the UTM limits of 84N to 80S
 // Written by Chuck Gantz- chuck.gantz@globalstar.com
 
-inline char FGeoReference::UTMLetter(double latitude)
+char FGeoReference::UTMLetter(double latitude)
 {
 	char LetterDesignator;
 
@@ -127,7 +127,7 @@ inline char FGeoReference::UTMLetter(double latitude)
 	return LetterDesignator;
 }
 
-inline FVector2D FGeoReference::TransformWGSToUTM(float longitude, float latitude)
+FVector2D FGeoReference::TransformWGSToUTM(float longitude, float latitude)
 {
 	OGRSpatialReference sourceSRS;
 	sourceSRS.SetWellKnownGeogCS("WGS84");
@@ -150,7 +150,7 @@ inline FVector2D FGeoReference::TransformWGSToUTM(float longitude, float latitud
 
 }
 
-inline FVector2D FGeoReference::TransformUTMToWGS(float longitude, float latitude, int utmzone, bool north)
+FVector2D FGeoReference::TransformUTMToWGS(float longitude, float latitude, int utmzone, bool north)
 {
 	OGRSpatialReference sourceSRS;
 	sourceSRS.SetUTM(utmzone, north);
