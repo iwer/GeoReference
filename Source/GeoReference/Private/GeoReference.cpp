@@ -6,10 +6,10 @@
 FVector FGeoReference::ToGameCoordinate(double Longitude, double Latitude, URegionOfInterest * Region)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("ToGameCoordinate(lon:%f lat:%f region: %s"), Longitude, Latitude, *Region->ToString());
-	FVector2D utm = FGeoReference::TransformWGSToUTM(Longitude, Latitude);
+	auto utm = UGeoCoordinate(Longitude,Latitude,EGeoCoordinateType::GCT_WGS84).ToUTM();
 	//FVector2D nw_corner_utm(Region->UTMCoordinates.X - Region->SizeM / 2, Region->UTMCoordinates.Y - Region->SizeM / 2);
 	// utm reference frame (SW=(UTM_W,UTM_S)) to landscape reference frame (NW=(0,0))
-	FVector2D pos = (utm - Region->UTMCoordinates) * FVector2D(1, -1);
+	FVector2D pos = (utm - Region->Location) * FVector2D(1, -1);
 	// scale to landscape (m->cm)
 	pos *= 100;
 	return FVector(pos.X, pos.Y, 0);
@@ -52,8 +52,8 @@ void FGeoReference::GetSize(GDALDatasetRef & gdaldata, double & width, double & 
 		auto utm_nw = FGeoReference::TransformWGSToUTM(west, north);
 		auto utm_se = FGeoReference::TransformWGSToUTM(east, south);
 
-		width = utm_se.X - utm_nw.X;
-		height = utm_nw.Y - utm_se.Y;
+		width = utm_se.Longitude - utm_nw.Longitude;
+		height = utm_nw.Latitude - utm_se.Latitude;
 
 	}
 	else if (FGeoReference::IsUTM(OSRNewSpatialReference(crs))) {
@@ -127,7 +127,7 @@ char FGeoReference::UTMLetter(double latitude)
 	return LetterDesignator;
 }
 
-FVector2D FGeoReference::TransformWGSToUTM(float longitude, float latitude)
+UGeoCoordinate FGeoReference::TransformWGSToUTM(double longitude, double latitude)
 {
 	OGRSpatialReference sourceSRS;
 	sourceSRS.SetWellKnownGeogCS("WGS84");
@@ -141,16 +141,17 @@ FVector2D FGeoReference::TransformWGSToUTM(float longitude, float latitude)
 	// if latitude is bigger than 84 or smaller than -80 there is no utm zone
 	if (FGeoReference::UTMLetter(latitude) == 'Z') {
 		UE_LOG(LogTemp, Error, TEXT("FGeoReference: latitude %f is outside defined UTM Zones!"), latitude);
-		return FVector2D();
+		return UGeoCoordinate();
 	}
 
 	point.assignSpatialReference(&sourceSRS);
 	point.transformTo(&targetSRS);
-	return FVector2D(point.getX(), point.getY());
+    return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_UTM, utmzone, latitude >= 0);
+
 
 }
 
-FVector2D FGeoReference::TransformUTMToWGS(float longitude, float latitude, int utmzone, bool north)
+UGeoCoordinate FGeoReference::TransformUTMToWGS(double longitude, double latitude, int utmzone, bool north)
 {
 	OGRSpatialReference sourceSRS;
 	sourceSRS.SetUTM(utmzone, north);
@@ -161,5 +162,5 @@ FVector2D FGeoReference::TransformUTMToWGS(float longitude, float latitude, int 
 	OGRPoint point(longitude, latitude);
 	point.assignSpatialReference(&sourceSRS);
 	point.transformTo(&targetSRS);
-	return FVector2D(point.getX(), point.getY());
+	return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_WGS84);
 }

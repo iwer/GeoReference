@@ -19,8 +19,8 @@ public:
 	static int UTMZone(double longitude, double latitude);
 	static char UTMLetter(double latitude);
 
-	static FVector2D TransformWGSToUTM(float longitude, float latitude);
-	static FVector2D TransformUTMToWGS(float longitude, float latitude, int utmzone, bool north);
+	static UGeoCoordinate TransformWGSToUTM(double longitude, double latitude);
+	static UGeoCoordinate TransformUTMToWGS(double longitude, double latitude, int utmzone, bool north);
 
 
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GDALHelpers.h"
+#include "GeoCoordinate.h"
 
 #include "ROI.generated.h"
 
@@ -23,19 +24,13 @@ enum EROIBorder {
 	East
 };
 
-UENUM(BlueprintType)
-enum EROICoordinateType {
-	UTM,
-	WSG84
-};
-
 /**
  * Defines a region of interest in geo coordinates
- * The region is defined in a projected coordinate system with 
- * linear scaled x and y axis, which are orthogonal. A WSG84 
- * coordinate defines the center of the region (and is 
- * calculated to UTM). As UTM coordinates are in meter and have 
- * orthogonal axis corner coordinates are calculated using the 
+ * The region is defined in a projected coordinate system with
+ * linear scaled x and y axis, which are orthogonal. A WSG84
+ * coordinate defines the center of the region (and is
+ * calculated to UTM). As UTM coordinates are in meter and have
+ * orthogonal axis corner coordinates are calculated using the
  * size (+/-(size/2))
  */
 UCLASS(BlueprintType)
@@ -43,6 +38,7 @@ class GEOREFERENCE_API URegionOfInterest : public UObject
 {
 	GENERATED_BODY()
 public:
+    UGeoCoordinate Location;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
 	FVector2D WSG84Coordinates;
@@ -71,10 +67,10 @@ public:
 	void InitFromGDAL(GDALDatasetRef &gdaldata);
 
 	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
-	FVector2D GetCorner(EROICorner corner, EROICoordinateType coordinatetype);
+	FVector2D GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype);
 
 	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
-	float GetBorder(EROIBorder border, EROICoordinateType coordinatetype);
+	float GetBorder(EROIBorder border, EGeoCoordinateType coordinatetype);
 
 	FString ToString();
 };
