@@ -5,11 +5,11 @@
 
 FVector FGeoReference::ToGameCoordinate(double Longitude, double Latitude, URegionOfInterest * Region)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("ToGameCoordinate(lon:%f lat:%f region: %s"), Longitude, Latitude, *Region->ToString());
+	UE_LOG(LogTemp, Warning, TEXT("ToGameCoordinate(lon:%f lat:%f region: %s"), Longitude, Latitude, *Region->ToString());
 	auto utm = UGeoCoordinate(Longitude,Latitude,EGeoCoordinateType::GCT_WGS84).ToUTM();
 	//FVector2D nw_corner_utm(Region->UTMCoordinates.X - Region->SizeM / 2, Region->UTMCoordinates.Y - Region->SizeM / 2);
 	// utm reference frame (SW=(UTM_W,UTM_S)) to landscape reference frame (NW=(0,0))
-	FVector2D pos = (utm - Region->Location) * FVector2D(1, -1);
+	FVector2D pos = (utm - Region->Location.ToUTM()) * FVector2D(1, -1);
 	// scale to landscape (m->cm)
 	pos *= 100;
 	return FVector(pos.X, pos.Y, 0);

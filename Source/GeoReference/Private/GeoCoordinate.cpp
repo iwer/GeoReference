@@ -57,7 +57,7 @@ UGeoCoordinate UGeoCoordinate::operator+(const UGeoCoordinate & other)
                             Latitude + other.Latitude,
                             Type);
     }
-    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator need to be of same type."))
+    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs argumaents of same type."))
     return UGeoCoordinate();
 }
 
@@ -68,7 +68,7 @@ UGeoCoordinate UGeoCoordinate::operator-(const UGeoCoordinate & other)
                             Latitude - other.Latitude,
                             Type);
     }
-    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator need to be of same type."))
+    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs arguments of same type."))
     return UGeoCoordinate();
 }
 
