@@ -37,8 +37,8 @@ void URegionOfInterest::Init(FVector2D geocoordinates, float size)
 	WSG84Coordinates = Location.ToFVector2D();
 	UTMCoordinates = Location.ToUTM().ToFVector2D();
 
-	UTMZone = Location.UTMZone;
-	NorthernHemisphere = Location.NorthernHemisphere;
+	UTMZone = FGeoReference::UTMZone(geocoordinates.X, geocoordinates.Y);
+	NorthernHemisphere = (geocoordinates.Y >= 0);
 }
 
 void URegionOfInterest::InitFromGDAL(GDALDatasetRef &gdaldata)
