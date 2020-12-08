@@ -69,17 +69,17 @@ void URegionOfInterest::InitFromGDAL(GDALDatasetRef &gdaldata)
 		int northhemi;
 		UTMZone = OSRGetUTMZone(crs, &northhemi);
 		NorthernHemisphere = (northhemi == TRUE);
-        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_UTM);
+        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_UTM, UTMZone, NorthernHemisphere);
 		UTMCoordinates = Location.ToFVector2D();
 		WGS84Coordinates = Location.ToWGS84().ToFVector2D();
-
-		SizeM = std::min((east - west), (south - north));
+		SizeM = std::abs(std::min((east - west), (south - north)));
 		UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
 	} else {
 		UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), crs_s);
 	}
 
 }
+
 
 FVector2D URegionOfInterest::GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype)
 {

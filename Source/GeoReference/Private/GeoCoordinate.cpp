@@ -14,7 +14,11 @@ UGeoCoordinate::UGeoCoordinate(double longitude, double latitude, EGeoCoordinate
 	, Type(type)
     , UTMZone(utmZone)
     , NorthernHemisphere(northernHemi)
-{}
+{
+    if(type==EGeoCoordinateType::GCT_UTM && utmZone == -1) {
+        UE_LOG(LogTemp,Error,TEXT("UGeoCoordinate: UTM zone undefined"));
+    }
+}
 
 FVector2D UGeoCoordinate::ToFVector2D()
 {
@@ -57,7 +61,7 @@ UGeoCoordinate UGeoCoordinate::operator+(const UGeoCoordinate & other)
                             Latitude + other.Latitude,
                             Type);
     }
-    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs argumaents of same type."))
+    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs arguments of same type."))
     return UGeoCoordinate();
 }
 
