@@ -12,7 +12,7 @@ URegionOfInterest::URegionOfInterest()
 
 URegionOfInterest::URegionOfInterest(FVector2D geocoordinates, float size)
 	: Location()
-    , WSG84Coordinates()
+    , WGS84Coordinates()
 	, UTMCoordinates()
 	, SizeM(0)
 	, UTMZone(-1)
@@ -34,7 +34,7 @@ URegionOfInterest::~URegionOfInterest()
 void URegionOfInterest::Init(FVector2D geocoordinates, float size)
 {
     Location = UGeoCoordinate(geocoordinates.X, geocoordinates.Y, EGeoCoordinateType::GCT_WGS84);
-	WSG84Coordinates = Location.ToFVector2D();
+	WGS84Coordinates = Location.ToFVector2D();
 	UTMCoordinates = Location.ToUTM().ToFVector2D();
 
 	UTMZone = FGeoReference::UTMZone(geocoordinates.X, geocoordinates.Y);
@@ -54,13 +54,13 @@ void URegionOfInterest::InitFromGDAL(GDALDatasetRef &gdaldata)
 	auto crs = OSRNewSpatialReference(crs_s);
 	if (FGeoReference::IsWGS84(crs)) {
         Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_WGS84);
-		WSG84Coordinates = Location.ToFVector2D();
+		WGS84Coordinates = Location.ToFVector2D();
 		UTMCoordinates = Location.ToUTM().ToFVector2D();
 
-		auto utm_west_center = UGeoCoordinate(west, WSG84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
-		auto utm_east_center = UGeoCoordinate(east, WSG84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
-		auto utm_north_center = UGeoCoordinate(WSG84Coordinates.X, north, EGeoCoordinateType::GCT_WGS84).ToUTM();
-		auto utm_south_center = UGeoCoordinate(WSG84Coordinates.X, south, EGeoCoordinateType::GCT_WGS84).ToUTM();
+		auto utm_west_center = UGeoCoordinate(west, WGS84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
+		auto utm_east_center = UGeoCoordinate(east, WGS84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
+		auto utm_north_center = UGeoCoordinate(WGS84Coordinates.X, north, EGeoCoordinateType::GCT_WGS84).ToUTM();
+		auto utm_south_center = UGeoCoordinate(WGS84Coordinates.X, south, EGeoCoordinateType::GCT_WGS84).ToUTM();
 
 		SizeM = std::min(utm_east_center.Longitude - utm_west_center.Longitude, utm_south_center.Latitude - utm_north_center.Latitude);
 
@@ -71,10 +71,14 @@ void URegionOfInterest::InitFromGDAL(GDALDatasetRef &gdaldata)
 		NorthernHemisphere = (northhemi == TRUE);
         Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_UTM);
 		UTMCoordinates = Location.ToFVector2D();
-		WSG84Coordinates = Location.ToWGS84().ToFVector2D();
+		WGS84Coordinates = Location.ToWGS84().ToFVector2D();
 
 		SizeM = std::min((east - west), (south - north));
+		UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
+	} else {
+		UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), crs_s);
 	}
+
 }
 
 FVector2D URegionOfInterest::GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype)
@@ -161,7 +165,7 @@ float URegionOfInterest::GetBorder(EROIBorder border, EGeoCoordinateType coordin
 
 FString URegionOfInterest::ToString()
 {
-	return TEXT("WSG85:") + WSG84Coordinates.ToString() + TEXT("; UTM:") + UTMCoordinates.ToString()
+	return TEXT("WSG85:") + WGS84Coordinates.ToString() + TEXT("; UTM:") + UTMCoordinates.ToString()
 		+ TEXT(";Size:") + FString::SanitizeFloat(SizeM) + TEXT(";UTMZone:") + FString::FromInt(UTMZone)
 		+ TEXT(";NorthHemi:") + (NorthernHemisphere ? TEXT("true") : TEXT("false"));
 }

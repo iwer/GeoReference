@@ -38,10 +38,10 @@ class GEOREFERENCE_API URegionOfInterest : public UObject
 {
 	GENERATED_BODY()
 public:
-    UGeoCoordinate Location;
+	UGeoCoordinate Location;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
-	FVector2D WSG84Coordinates;
+	FVector2D WGS84Coordinates;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
 	FVector2D UTMCoordinates;
