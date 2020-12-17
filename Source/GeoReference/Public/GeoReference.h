@@ -10,6 +10,7 @@ class GEOREFERENCE_API FGeoReference
 {
 public:
 	static FVector ToGameCoordinate(double Longitude, double Latitude, URegionOfInterest * Region);
+    static FVector ToGameCoordinate(UGeoCoordinate* geocoord, URegionOfInterest * Region);
 
 	static bool IsWGS84(OGRSpatialReferenceH ref);
 	static bool IsUTM(OGRSpatialReferenceH ref);

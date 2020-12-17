@@ -27,6 +27,11 @@ URegionOfInterest::URegionOfInterest(GDALDatasetRef gdaldata)
 	InitFromGDAL(gdaldata);
 }
 
+URegionOfInterest::URegionOfInterest(const char * crsString, double east, double west, double north, double south)
+    : URegionOfInterest()
+{
+    InitFromCRSAndEdges(crsString, east, west, north, south);
+}
 URegionOfInterest::~URegionOfInterest()
 {
 }
@@ -50,36 +55,40 @@ void URegionOfInterest::InitFromGDAL(GDALDatasetRef &gdaldata)
 	double south = north + srcsize.X * georef[4] + srcsize.Y * georef[5];
 	double east = west + srcsize.X * georef[1] + srcsize.Y * georef[2];
 
-	auto crs_s = gdaldata->GetProjectionRef();
-	auto crs = OSRNewSpatialReference(crs_s);
-	if (FGeoReference::IsWGS84(crs)) {
-        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_WGS84);
-		WGS84Coordinates = Location.ToFVector2D();
-		UTMCoordinates = Location.ToUTM().ToFVector2D();
+	const char * crs_s = gdaldata->GetProjectionRef();
 
-		auto utm_west_center = UGeoCoordinate(west, WGS84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
-		auto utm_east_center = UGeoCoordinate(east, WGS84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
-		auto utm_north_center = UGeoCoordinate(WGS84Coordinates.X, north, EGeoCoordinateType::GCT_WGS84).ToUTM();
-		auto utm_south_center = UGeoCoordinate(WGS84Coordinates.X, south, EGeoCoordinateType::GCT_WGS84).ToUTM();
-
-		SizeM = std::min(utm_east_center.Longitude - utm_west_center.Longitude, utm_south_center.Latitude - utm_north_center.Latitude);
-
-	}
-	else if (FGeoReference::IsUTM(crs)) {
-		int northhemi;
-		UTMZone = OSRGetUTMZone(crs, &northhemi);
-		NorthernHemisphere = (northhemi == TRUE);
-        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_UTM, UTMZone, NorthernHemisphere);
-		UTMCoordinates = Location.ToFVector2D();
-		WGS84Coordinates = Location.ToWGS84().ToFVector2D();
-		SizeM = std::abs(std::min((east - west), (south - north)));
-		UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
-	} else {
-		UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), crs_s);
-	}
-
+    InitFromCRSAndEdges(crs_s, east, west, north, south);
 }
 
+void URegionOfInterest::InitFromCRSAndEdges(const char * crsString, double east, double west, double north, double south)
+{
+    OGRSpatialReferenceH crs = OSRNewSpatialReference(crsString);
+    if (FGeoReference::IsWGS84(crs)) {
+        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_WGS84);
+        WGS84Coordinates = Location.ToFVector2D();
+        UTMCoordinates = Location.ToUTM().ToFVector2D();
+
+        auto utm_west_center = UGeoCoordinate(west, WGS84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
+        auto utm_east_center = UGeoCoordinate(east, WGS84Coordinates.Y, EGeoCoordinateType::GCT_WGS84).ToUTM();
+        auto utm_north_center = UGeoCoordinate(WGS84Coordinates.X, north, EGeoCoordinateType::GCT_WGS84).ToUTM();
+        auto utm_south_center = UGeoCoordinate(WGS84Coordinates.X, south, EGeoCoordinateType::GCT_WGS84).ToUTM();
+
+        SizeM = std::min(utm_east_center.Longitude - utm_west_center.Longitude, utm_south_center.Latitude - utm_north_center.Latitude);
+
+    }
+    else if (FGeoReference::IsUTM(crs)) {
+        int northhemi;
+        UTMZone = OSRGetUTMZone(crs, &northhemi);
+        NorthernHemisphere = (northhemi == TRUE);
+        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, EGeoCoordinateType::GCT_UTM, UTMZone, NorthernHemisphere);
+        UTMCoordinates = Location.ToFVector2D();
+        WGS84Coordinates = Location.ToWGS84().ToFVector2D();
+        SizeM = std::abs(std::min((east - west), (south - north)));
+        UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
+    } else {
+        UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), crsString);
+    }
+}
 
 FVector2D URegionOfInterest::GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype)
 {

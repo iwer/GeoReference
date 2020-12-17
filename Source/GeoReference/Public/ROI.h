@@ -59,12 +59,14 @@ public:
 	URegionOfInterest();
 	URegionOfInterest(FVector2D geocoordinates, float size);
 	URegionOfInterest(GDALDatasetRef gdaldata);
+    URegionOfInterest(const char * crsString, double east, double west, double north, double south);
 	~URegionOfInterest();
 
 
 	UFUNCTION(BlueprintCallable, Category = "ROI|Initializer")
 	void Init(FVector2D geocoordinates, float size);
 	void InitFromGDAL(GDALDatasetRef &gdaldata);
+    void InitFromCRSAndEdges(const char * crsString, double east, double west, double north, double south);
 
 	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
 	FVector2D GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype);
