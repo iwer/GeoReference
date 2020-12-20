@@ -31,11 +31,11 @@ protected:
 	virtual void BeginPlay() override;
     virtual void OnConstruction(const FTransform & Transform) override;
 
+    AGeoReferenceActor * GeoRef;
+    ALandscape * Landscape;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-private:
-    AGeoReferenceActor * GeoRef;
-    ALandscape * Landscape;
 };

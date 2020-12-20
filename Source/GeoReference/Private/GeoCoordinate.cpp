@@ -58,7 +58,7 @@ UGeoCoordinate UGeoCoordinate::ToUTM(int utmZone, bool north)
 		return UGeoCoordinate(Longitude, Latitude, EGeoCoordinateType::GCT_UTM, zone, nrth);
 	}
 
-    UE_LOG(LogTemp,Warning,TEXT("UGeoCoordinate: 2U result: %d %d"), utmZone, north);
+    // UE_LOG(LogTemp,Warning,TEXT("UGeoCoordinate: 2U result: %d %d"), utmZone, north);
 	return FGeoReference::TransformWGSToUTM(Longitude, Latitude, zone, nrth);
 }
 

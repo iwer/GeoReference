@@ -5,7 +5,7 @@
 
 FVector FGeoReference::ToGameCoordinate(double Longitude, double Latitude, URegionOfInterest & Region)
 {
-UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Region.NorthernHemisphere)
+    // UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Region.NorthernHemisphere)
     // calculate utm coordinate of lon/lat in zone of roi origin
 	auto utm = UGeoCoordinate(Longitude,Latitude,EGeoCoordinateType::GCT_WGS84).ToUTM(Region.UTMZone, Region.NorthernHemisphere);
 
@@ -19,7 +19,7 @@ UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Reg
 }
 
 FVector FGeoReference::ToGameCoordinate(UGeoCoordinate* geocoord, URegionOfInterest & Region) {
-    UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Region.NorthernHemisphere)
+    // UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Region.NorthernHemisphere)
     auto utm = geocoord->ToUTM(Region.UTMZone, Region.NorthernHemisphere);
 
     // calculate relative to roi origin
@@ -166,7 +166,7 @@ UGeoCoordinate FGeoReference::TransformWGSToUTM(double longitude, double latitud
 
 	point.assignSpatialReference(&sourceSRS);
 	point.transformTo(&targetSRS);
-    UE_LOG(LogTemp,Warning,TEXT("FGeoReference: W2U result: %f, %f Zone: %d %d (called with %d %d)"),point.getX(), point.getY(), utmzone, north, utmZone, northernHemi);
+    // UE_LOG(LogTemp,Warning,TEXT("FGeoReference: W2U result: %f, %f Zone: %d %d (called with %d %d)"),point.getX(), point.getY(), utmzone, north, utmZone, northernHemi);
     return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_UTM, utmzone, north);
 
 

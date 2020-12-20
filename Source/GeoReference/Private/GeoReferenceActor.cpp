@@ -56,7 +56,7 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
         UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: No ROI defined!"))
         return FVector::ZeroVector;
     }
-    UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: 2GC ROI: %s"), *ROI->ToString())
+    // UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: 2GC ROI: %s"), *ROI->ToString())
 	return FGeoReference::ToGameCoordinate(geocoordinate.X, geocoordinate.Y, *ROI);
 }
 

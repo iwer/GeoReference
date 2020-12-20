@@ -47,7 +47,7 @@ void AGeoLocatedActor::OnConstruction(const FTransform & Transform)
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("AGeoLocatedActor: ROI found: %s"), *GeoRef->ROI->ToString())
+    // UE_LOG(LogTemp, Warning, TEXT("AGeoLocatedActor: ROI found: %s"), *GeoRef->ROI->ToString())
 
     // Find Landscape
     for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
@@ -82,7 +82,7 @@ void AGeoLocatedActor::OnConstruction(const FTransform & Transform)
     } else {
         Location.Z = Transform.GetTranslation().Z;
     }
-    UE_LOG(LogTemp, Warning, TEXT("AGeoLocatedActor: Game-Location: %s"), *Location.ToString())
+    // UE_LOG(LogTemp, Warning, TEXT("AGeoLocatedActor: Game-Location: %s"), *Location.ToString())
 
     SetActorLocation(Location);
 

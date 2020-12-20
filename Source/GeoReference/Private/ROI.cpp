@@ -47,7 +47,7 @@ void URegionOfInterest::Init(FVector2D geocoordinates, float size)
 	UTMZone = FGeoReference::UTMZone(geocoordinates.X, geocoordinates.Y);
 	NorthernHemisphere = (geocoordinates.Y >= 0);
 
-    UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: After Init: %s"), *ToString())
+    // UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: After Init: %s"), *ToString())
 }
 
 void URegionOfInterest::InitFromGDAL(GDALDatasetRef &gdaldata)
@@ -88,7 +88,7 @@ void URegionOfInterest::InitFromCRSAndEdges(const char * crsString, double east,
         UTMCoordinates = Location.ToFVector2D();
         WGS84Coordinates = Location.ToWGS84().ToFVector2D();
         SizeM = std::abs(std::min((east - west), (south - north)));
-        UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
+        // UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
     } else {
         UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), crsString);
     }
