@@ -3,23 +3,27 @@
 #include "GeoReference.h"
 #include "ROI.h"
 
-FVector FGeoReference::ToGameCoordinate(double Longitude, double Latitude, URegionOfInterest * Region)
+FVector FGeoReference::ToGameCoordinate(double Longitude, double Latitude, URegionOfInterest & Region)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ToGameCoordinate(lon:%f lat:%f region: %s"), Longitude, Latitude, *Region->ToString());
-	auto utm = UGeoCoordinate(Longitude,Latitude,EGeoCoordinateType::GCT_WGS84).ToUTM();
-	//FVector2D nw_corner_utm(Region->UTMCoordinates.X - Region->SizeM / 2, Region->UTMCoordinates.Y - Region->SizeM / 2);
-	// utm reference frame (SW=(UTM_W,UTM_S)) to landscape reference frame (NW=(0,0))
-	FVector2D pos = (utm - Region->Location.ToUTM()) * FVector2D(1, -1);
-	// scale to landscape (m->cm)
+UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Region.NorthernHemisphere)
+    // calculate utm coordinate of lon/lat in zone of roi origin
+	auto utm = UGeoCoordinate(Longitude,Latitude,EGeoCoordinateType::GCT_WGS84).ToUTM(Region.UTMZone, Region.NorthernHemisphere);
+
+    // calculate relative to roi origin
+	FVector2D pos = (utm - Region.Location.ToUTM()) * FVector2D(1, -1);
+
+    // scale to landscape (m->cm)
 	pos *= 100;
+    // UE_LOG(LogTemp, Warning, TEXT("FGeoReference: %f, %f, 0"), pos.X, pos.Y)
 	return FVector(pos.X, pos.Y, 0);
 }
 
-FVector FGeoReference::ToGameCoordinate(UGeoCoordinate* geocoord, URegionOfInterest * Region) {
-    auto utm = geocoord->ToUTM();
-	//FVector2D nw_corner_utm(Region->UTMCoordinates.X - Region->SizeM / 2, Region->UTMCoordinates.Y - Region->SizeM / 2);
-	// utm reference frame (SW=(UTM_W,UTM_S)) to landscape reference frame (NW=(0,0))
-	FVector2D pos = (utm - Region->Location.ToUTM()) * FVector2D(1, -1);
+FVector FGeoReference::ToGameCoordinate(UGeoCoordinate* geocoord, URegionOfInterest & Region) {
+    UE_LOG(LogTemp,Warning,TEXT("FGeoReference: RegLoc: %d %d"), Region.UTMZone, Region.NorthernHemisphere)
+    auto utm = geocoord->ToUTM(Region.UTMZone, Region.NorthernHemisphere);
+
+    // calculate relative to roi origin
+	FVector2D pos = (utm - Region.Location.ToUTM()) * FVector2D(1, -1);
 	// scale to landscape (m->cm)
 	pos *= 100;
 	return FVector(pos.X, pos.Y, 0);
@@ -137,7 +141,7 @@ char FGeoReference::UTMLetter(double latitude)
 	return LetterDesignator;
 }
 
-UGeoCoordinate FGeoReference::TransformWGSToUTM(double longitude, double latitude)
+UGeoCoordinate FGeoReference::TransformWGSToUTM(double longitude, double latitude, int utmZone, bool northernHemi)
 {
 	OGRSpatialReference sourceSRS;
 	sourceSRS.SetWellKnownGeogCS("WGS84");
@@ -145,18 +149,25 @@ UGeoCoordinate FGeoReference::TransformWGSToUTM(double longitude, double latitud
 	OGRSpatialReference targetSRS;
 
 	int utmzone = FGeoReference::UTMZone(longitude, latitude);
-	targetSRS.SetUTM(utmzone, latitude >= 0);
+    bool north = latitude >= 0;
+    if(utmZone != -1){
+        utmzone = utmZone;
+        north = northernHemi;
+    }
+
+	targetSRS.SetUTM(utmzone, north);
 
 	OGRPoint point(longitude, latitude);
 	// if latitude is bigger than 84 or smaller than -80 there is no utm zone
 	if (FGeoReference::UTMLetter(latitude) == 'Z') {
 		UE_LOG(LogTemp, Error, TEXT("FGeoReference: latitude %f is outside defined UTM Zones!"), latitude);
-		return UGeoCoordinate();
+		return UGeoCoordinate(0,0,EGeoCoordinateType::GCT_UTM, -1, latitude >= 0);
 	}
 
 	point.assignSpatialReference(&sourceSRS);
 	point.transformTo(&targetSRS);
-    return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_UTM, utmzone, latitude >= 0);
+    UE_LOG(LogTemp,Warning,TEXT("FGeoReference: W2U result: %f, %f Zone: %d %d (called with %d %d)"),point.getX(), point.getY(), utmzone, north, utmZone, northernHemi);
+    return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_UTM, utmzone, north);
 
 
 }
@@ -172,5 +183,5 @@ UGeoCoordinate FGeoReference::TransformUTMToWGS(double longitude, double latitud
 	OGRPoint point(longitude, latitude);
 	point.assignSpatialReference(&sourceSRS);
 	point.transformTo(&targetSRS);
-	return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_WGS84);
+	return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_WGS84, -1, true);
 }

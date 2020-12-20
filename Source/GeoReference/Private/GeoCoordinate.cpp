@@ -16,7 +16,7 @@ UGeoCoordinate::UGeoCoordinate(double longitude, double latitude, EGeoCoordinate
     , NorthernHemisphere(northernHemi)
 {
     if(type==EGeoCoordinateType::GCT_UTM && utmZone == -1) {
-        UE_LOG(LogTemp,Error,TEXT("UGeoCoordinate: UTM zone undefined"));
+        UE_LOG(LogTemp,Error,TEXT("UGeoCoordinate: UTM zone undefined for (%f, %f)"), Latitude, Longitude);
     }
 }
 
@@ -32,34 +32,46 @@ UGeoCoordinate UGeoCoordinate::ToWGS84()
 		return UGeoCoordinate();
 	}
 	if (Type == EGeoCoordinateType::GCT_WGS84) {
-		UE_LOG(LogTemp, Warning, TEXT("UGeoCoordinate: Coordinate is already WSG84, returning copy."));
-		return UGeoCoordinate(Longitude, Latitude, Type);
+		// UE_LOG(LogTemp, Warning, TEXT("UGeoCoordinate: Coordinate is already WSG84, returning copy."));
+		return UGeoCoordinate(Longitude, Latitude, EGeoCoordinateType::GCT_WGS84);
 	}
 
 	return FGeoReference::TransformUTMToWGS(Longitude, Latitude, UTMZone, NorthernHemisphere);
 }
 
-UGeoCoordinate UGeoCoordinate::ToUTM()
+UGeoCoordinate UGeoCoordinate::ToUTM(int utmZone, bool north)
 {
+    int zone = UTMZone;
+    bool nrth = NorthernHemisphere;
+    if(utmZone != -1){
+        zone = utmZone;
+        nrth = north;
+    }
+
 	if (Type == EGeoCoordinateType::GCT_UNDEFINED) {
 		UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Cannot convert undefined coordinate type."));
 		return UGeoCoordinate();
 	}
 	if (Type == EGeoCoordinateType::GCT_UTM) {
-		UE_LOG(LogTemp, Warning, TEXT("UGeoCoordinate: Coordinate is already UTM, returning copy."));
+		// UE_LOG(LogTemp, Warning, TEXT("UGeoCoordinate: Coordinate is already UTM, returning copy."));
 
-		return UGeoCoordinate(Longitude, Latitude, Type);
+		return UGeoCoordinate(Longitude, Latitude, EGeoCoordinateType::GCT_UTM, zone, nrth);
 	}
 
-	return FGeoReference::TransformWGSToUTM(Longitude, Latitude);
+    UE_LOG(LogTemp,Warning,TEXT("UGeoCoordinate: 2U result: %d %d"), utmZone, north);
+	return FGeoReference::TransformWGSToUTM(Longitude, Latitude, zone, nrth);
 }
 
 UGeoCoordinate UGeoCoordinate::operator+(const UGeoCoordinate & other)
 {
     if(Type == other.Type) {
+        if(Type == EGeoCoordinateType::GCT_UTM && (UTMZone != other.UTMZone || NorthernHemisphere != other.NorthernHemisphere)){
+            UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs UTMCoordinates in the same zone."))
+            return UGeoCoordinate();
+        }
         return UGeoCoordinate(Longitude + other.Longitude,
                             Latitude + other.Latitude,
-                            Type);
+                            Type, UTMZone, NorthernHemisphere);
     }
     UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs arguments of same type."))
     return UGeoCoordinate();
@@ -68,9 +80,13 @@ UGeoCoordinate UGeoCoordinate::operator+(const UGeoCoordinate & other)
 UGeoCoordinate UGeoCoordinate::operator-(const UGeoCoordinate & other)
 {
     if(Type == other.Type) {
+        if(Type == EGeoCoordinateType::GCT_UTM && (UTMZone != other.UTMZone || NorthernHemisphere != other.NorthernHemisphere)){
+            UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs UTMCoordinates in the same zone.(this:%d, %d; Other: %d, %d)"),UTMZone, NorthernHemisphere, other.UTMZone, other.NorthernHemisphere)
+            return UGeoCoordinate();
+        }
         return UGeoCoordinate(Longitude - other.Longitude,
                             Latitude - other.Latitude,
-                            Type);
+                            Type, UTMZone, NorthernHemisphere);
     }
     UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs arguments of same type."))
     return UGeoCoordinate();
