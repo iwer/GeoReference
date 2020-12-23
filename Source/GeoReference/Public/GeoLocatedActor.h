@@ -20,7 +20,8 @@ public:
     float Longitude;
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     float Latitude;
-
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    bool bSnapToGround;
 
 	// Sets default values for this actor's properties
 	AGeoLocatedActor();

@@ -27,7 +27,7 @@ public:
 	URegionOfInterest * ROI;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    bool ShowBounds;
+    bool bShowBounds;
 
     UFUNCTION(BlueprintCallable)
     FVector ToGameCoordinate(FVector geocoordinate);

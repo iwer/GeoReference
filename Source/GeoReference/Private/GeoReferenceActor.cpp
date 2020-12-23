@@ -32,7 +32,7 @@ void AGeoReferenceActor::OnConstruction(const FTransform & Transform)
     ROI->Init(FVector2D(Longitude,Latitude), SizeM);
     // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: ROI: %s"), *ROI->ToString())
 
-    if(ShowBounds) {
+    if(bShowBounds) {
         FVector2D nw = ROI->GetCorner(EROICorner::NW, EGeoCoordinateType::GCT_WGS84);
         FVector2D sw = ROI->GetCorner(EROICorner::SW, EGeoCoordinateType::GCT_WGS84);
         FVector2D ne = ROI->GetCorner(EROICorner::NE, EGeoCoordinateType::GCT_WGS84);
@@ -43,10 +43,19 @@ void AGeoReferenceActor::OnConstruction(const FTransform & Transform)
         FVector neg = ToGameCoordinate(FVector(ne, 0));
         FVector seg = ToGameCoordinate(FVector(se, 0));
 
-        DrawDebugLine(GetWorld(), nwg, swg, FColor::Green, false, 5.f, false, 4.f);
-        DrawDebugLine(GetWorld(), nwg, neg, FColor::Green, false, 5.f, false, 4.f);
-        DrawDebugLine(GetWorld(), swg, seg, FColor::Green, false, 5.f, false, 4.f);
-        DrawDebugLine(GetWorld(), neg, seg, FColor::Green, false, 6.f, false, 4.f);
+        UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Bounds %s; %s; %s; %s"),*nwg.ToString(),*swg.ToString(),*neg.ToString(),*seg.ToString());
+
+        DrawDebugLine(GetWorld(), nwg, swg, FColor::Green, false, 20.f, false, 4.f);
+        DrawDebugLine(GetWorld(), nwg, neg, FColor::Green, false, 20.f, false, 4.f);
+        DrawDebugLine(GetWorld(), swg, seg, FColor::Green, false, 20.f, false, 4.f);
+        DrawDebugLine(GetWorld(), neg, seg, FColor::Green, false, 20.f, false, 4.f);
+
+        DrawDebugSphere(GetWorld(), nwg, 200.0, 8, FColor::Red, true, 20.0, false, 5.);
+        DrawDebugSphere(GetWorld(), swg, 200.0, 8, FColor::Red, true, 20.0, false, 5.);
+        DrawDebugSphere(GetWorld(), neg, 200.0, 8, FColor::Red, true, 20.0, false, 5.);
+        DrawDebugSphere(GetWorld(), seg, 200.0, 8, FColor::Red, true, 20.0, false, 5.);
+
+
     }
 }
 
@@ -56,8 +65,31 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
         UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: No ROI defined!"))
         return FVector::ZeroVector;
     }
+
+    // see if there is a landscape
+    ALandscape * landscape = nullptr;
+    for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
+    {
+        if(Itr->IsA(ALandscape::StaticClass())){
+            landscape = *Itr;
+            break;
+        } else {
+            continue;
+        }
+    }
+
+    UGeoCoordinate geocoord(geocoordinate.X, geocoordinate.Y, EGeoCoordinateType::GCT_WGS84);
+    FVector gamecoord = geocoord.ToGameCoordinate(*ROI);
+
+    if(landscape){
+        FVector origin, boxExtends;
+        landscape->GetActorBounds(true, origin, boxExtends, false);
+
+        UE_LOG(LogTemp, Warning, TEXT("AGeoLocatedActor: Landscape origin: %s"), *origin.ToString())
+        gamecoord += origin;
+    }
     // UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: 2GC ROI: %s"), *ROI->ToString())
-	return FGeoReference::ToGameCoordinate(geocoordinate.X, geocoordinate.Y, *ROI);
+	return gamecoord;
 }
 
 FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
