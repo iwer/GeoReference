@@ -85,10 +85,11 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
         FVector origin, boxExtends;
         landscape->GetActorBounds(true, origin, boxExtends, false);
 
-        UE_LOG(LogTemp, Warning, TEXT("AGeoLocatedActor: Landscape origin: %s"), *origin.ToString())
+        // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Landscape origin: %s"), *origin.ToString())
         gamecoord += origin;
     }
     // UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: 2GC ROI: %s"), *ROI->ToString())
+    gamecoord.Z = geocoordinate.Z;
 	return gamecoord;
 }
 

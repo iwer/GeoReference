@@ -15,6 +15,8 @@ AGeoLocatedActor::AGeoLocatedActor()
     GeoRef = nullptr;
     Landscape = nullptr;
 
+    Root = CreateDefaultSubobject<USceneComponent>("RootComponent");
+    SetRootComponent(Root);
 }
 
 // Called when the game starts or when spawned
@@ -53,21 +55,7 @@ void AGeoLocatedActor::OnConstruction(const FTransform & Transform)
 
     // If SnapToLandscape is enabled and there is a landscape
     if(bSnapToGround) {
-        // line trace to find z
-        FHitResult Hit(ForceInit);
-        FVector Start = Location + FVector(0,0,100000);
-        FVector End = Location + FVector(0,0,-100000);
-        FCollisionQueryParams CollisionParams;
-        CollisionParams.AddIgnoredActor(this);
-
-        DrawDebugLine(GetWorld(), Start, End, FColor::Green, true, 2.f, false, 4.f);
-
-        GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldDynamic, CollisionParams);
-        if(Hit.IsValidBlockingHit()) {
-            Location.Z = Hit.Location.Z;
-        } else {
-            Location.Z = Transform.GetTranslation().Z;
-        }
+        Location = SnapToGround(Location, 100000);
 
     } else {
         Location.Z = Transform.GetTranslation().Z;
@@ -76,4 +64,25 @@ void AGeoLocatedActor::OnConstruction(const FTransform & Transform)
 
     SetActorLocation(Location);
 
+}
+
+FVector AGeoLocatedActor::SnapToGround(const FVector &Vector, float Range)
+{
+    FVector HitLocation(Vector.X, Vector.Y, 0);
+    // line trace to find z
+    FHitResult Hit(ForceInit);
+    FVector Start = Vector + FVector(0,0,Range);
+    FVector End = Vector + FVector(0,0,-1*Range);
+    FCollisionQueryParams CollisionParams;
+    CollisionParams.AddIgnoredActor(this);
+
+    //DrawDebugLine(GetWorld(), Start, End, FColor::Green, false, 5.f, false, 4.f);
+
+    GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_WorldDynamic, CollisionParams);
+    if(Hit.IsValidBlockingHit()) {
+        HitLocation.Z = Hit.Location.Z;
+    } else {
+        HitLocation.Z = Vector.Z;
+    }
+    return HitLocation;
 }

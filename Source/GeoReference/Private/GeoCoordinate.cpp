@@ -108,7 +108,7 @@ UGeoCoordinate UGeoCoordinate::TransformToUTM(int TargetUTMZone, bool bTargetNor
     OGRPoint point(Longitude, Latitude);
     // if latitude is bigger than 84 or smaller than -80 there is no utm zone
     if (UGeoCoordinate::GetUTMLetter(Latitude) == 'Z') {
-        UE_LOG(LogTemp, Error, TEXT("FGeoReferenceHelper: latitude %f is outside defined UTM Zones!"), Latitude);
+        UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: latitude %f is outside defined UTM Zones!"), Latitude);
         return UGeoCoordinate(0,0,EGeoCoordinateType::GCT_UTM, -1, Latitude >= 0);
     }
 
