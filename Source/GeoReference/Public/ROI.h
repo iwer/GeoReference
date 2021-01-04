@@ -38,6 +38,9 @@ class GEOREFERENCE_API URegionOfInterest : public UObject
 {
 	GENERATED_BODY()
 public:
+    /**
+    * 
+    */
 	UGeoCoordinate Location;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
@@ -53,18 +56,22 @@ public:
 	int UTMZone;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
-	bool NorthernHemisphere;
+	bool bNorthernHemisphere;
 
 
 	URegionOfInterest();
 	URegionOfInterest(FVector2D geocoordinates, float size);
 	URegionOfInterest(GDALDatasetRef gdaldata);
+    URegionOfInterest(const char * crsString, double east, double west, double north, double south);
 	~URegionOfInterest();
 
+    static void GetSize(GDALDatasetRef &gdaldata, double &OutWidth, double &OutHeight);
 
-	UFUNCTION(BlueprintCallable, Category = "ROI|Initializer")
+
+    UFUNCTION(BlueprintCallable, Category = "ROI|Initializer")
 	void Init(FVector2D geocoordinates, float size);
 	void InitFromGDAL(GDALDatasetRef &gdaldata);
+    void InitFromCRSAndEdges(const char * crsString, double east, double west, double north, double south);
 
 	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
 	FVector2D GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype);

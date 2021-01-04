@@ -16,8 +16,18 @@ public:
 	// Sets default values for this actor's properties
 	AGeoReferenceActor();
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Longitude;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float Latitude;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float SizeM;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	URegionOfInterest * ROI;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    bool bShowBounds;
 
     UFUNCTION(BlueprintCallable)
     FVector ToGameCoordinate(FVector geocoordinate);
@@ -31,6 +41,7 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+    virtual void OnConstruction(const FTransform & Transform) override;
 
 
 
