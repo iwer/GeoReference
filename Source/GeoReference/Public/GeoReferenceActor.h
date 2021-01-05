@@ -34,6 +34,13 @@ public:
 
     UFUNCTION(BlueprintCallable)
     FVector ToGeoCoordinate(FVector gamecoordinate);
+
+    UFUNCTION(BlueprintCallable)
+    bool IsGameCoordInsideROI(FVector gamecoord);
+
+    UFUNCTION(BlueprintCallable)
+    bool IsGeoCoordInsideROI(FVector geocoord);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -43,6 +50,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
     virtual void OnConstruction(const FTransform & Transform) override;
 
-
+private:
+    UGeoCoordinate CalculateGeoLocation(FVector gamecoordinate);
 
 };
