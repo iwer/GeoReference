@@ -95,5 +95,64 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
 
 FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
 {
-    return FVector();
+    if(!ROI) {
+        UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: No ROI defined!"))
+        return FVector::ZeroVector;
+    }
+
+    UGeoCoordinate coord = CalculateGeoLocation(gamecoordinate);
+
+    // make WGS48 FVector and return
+    return FVector(coord.ToWGS84().ToFVector2D(), 0);
+}
+
+UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) {
+    // see if there is a landscape
+    ALandscape * landscape = nullptr;
+    for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
+    {
+        if(Itr->IsA(ALandscape::StaticClass())){
+            landscape = *Itr;
+            break;
+        } else {
+            continue;
+        }
+    }
+    FVector geocoord = gamecoordinate;
+
+    // subtract landscape center from coordinate
+    if(landscape){
+        FVector origin, boxExtends;
+        landscape->GetActorBounds(true, origin, boxExtends, false);
+
+        // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Landscape origin: %s"), *origin.ToString())
+        geocoord -= origin;
+    }
+
+    // to meters with reverse y direction
+    geocoord *= FVector(.01, -.01, .01);
+
+    // add UTM offset of ROI center
+    geocoord += FVector(ROI->Location.ToUTM().ToFVector2D(), 0);
+
+    // Make UTM geocoord
+    return UGeoCoordinate(geocoord.X, geocoord.Y, EGeoCoordinateType::GCT_UTM, ROI->UTMZone, ROI->bNorthernHemisphere);
+}
+
+bool AGeoReferenceActor::IsGameCoordInsideROI(FVector gamecoord)
+{
+    if(!ROI)
+        return false;
+
+    auto coord = CalculateGeoLocation(gamecoord);
+    return ROI->Surrounds(coord);
+}
+
+bool AGeoReferenceActor::IsGeoCoordInsideROI(FVector geocoord)
+{
+    if(!ROI)
+        return false;
+
+    UGeoCoordinate coord(geocoord.X, geocoord.Y, EGeoCoordinateType::GCT_WGS84);
+    return ROI->Surrounds(coord);
 }

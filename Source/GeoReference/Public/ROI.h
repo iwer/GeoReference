@@ -39,7 +39,7 @@ class GEOREFERENCE_API URegionOfInterest : public UObject
 	GENERATED_BODY()
 public:
     /**
-    * 
+    *
     */
 	UGeoCoordinate Location;
 
@@ -78,6 +78,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
 	float GetBorder(EROIBorder border, EGeoCoordinateType coordinatetype);
+
+
+    bool Surrounds(UGeoCoordinate &coord);
+
 
 	FString ToString();
 };

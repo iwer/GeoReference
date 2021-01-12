@@ -233,6 +233,18 @@ float URegionOfInterest::GetBorder(EROIBorder border, EGeoCoordinateType coordin
 	return bordercoord;
 }
 
+bool URegionOfInterest::Surrounds(UGeoCoordinate &coord)
+{
+    UGeoCoordinate utm = coord.ToUTM();
+    float west = GetBorder(EROIBorder::West, EGeoCoordinateType::GCT_UTM);
+    float east = GetBorder(EROIBorder::East, EGeoCoordinateType::GCT_UTM);
+    float south = GetBorder(EROIBorder::South, EGeoCoordinateType::GCT_UTM);
+    float north = GetBorder(EROIBorder::North, EGeoCoordinateType::GCT_UTM);
+
+    return (utm.Longitude >= west && utm.Longitude <= east
+        && utm.Latitude >= south && utm.Latitude <= north);
+}
+
 FString URegionOfInterest::ToString()
 {
     FString locType;
