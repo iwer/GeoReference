@@ -10,6 +10,8 @@ AGeoReferenceActor::AGeoReferenceActor()
      // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = false;
     ROI = CreateDefaultSubobject<URegionOfInterest>(FName(TEXT("RegionOfInterest")));
+    bShowBounds = false;
+    bSnapToLandscape = true;
 }
 
 // Called when the game starts or when spawned
@@ -66,27 +68,30 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
         return FVector::ZeroVector;
     }
 
-    // see if there is a landscape
-    ALandscape * landscape = nullptr;
-    for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
-    {
-        if(Itr->IsA(ALandscape::StaticClass())){
-            landscape = *Itr;
-            break;
-        } else {
-            continue;
-        }
-    }
+
 
     UGeoCoordinate geocoord(geocoordinate.X, geocoordinate.Y, UGeoCoordinate::EPSG_WGS84);
     FVector gamecoord = geocoord.ToGameCoordinate(*ROI);
 
-    if(landscape){
-        FVector origin, boxExtends;
-        landscape->GetActorBounds(true, origin, boxExtends, false);
+    if(bSnapToLandscape) {
+        // see if there is a landscape
+        ALandscape * landscape = nullptr;
+        for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
+        {
+            if(Itr->IsA(ALandscape::StaticClass())){
+                landscape = *Itr;
+                break;
+            } else {
+                continue;
+            }
+        }
+        if(landscape){
+            FVector origin, boxExtends;
+            landscape->GetActorBounds(true, origin, boxExtends, false);
 
-        // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Landscape origin: %s"), *origin.ToString())
-        gamecoord += origin;
+            // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Landscape origin: %s"), *origin.ToString())
+            gamecoord += origin;
+        }
     }
     // UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: 2GC ROI: %s"), *ROI->ToString())
     gamecoord.Z = geocoordinate.Z;
@@ -107,26 +112,29 @@ FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
 }
 
 UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) {
-    // see if there is a landscape
-    ALandscape * landscape = nullptr;
-    for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
-    {
-        if(Itr->IsA(ALandscape::StaticClass())){
-            landscape = *Itr;
-            break;
-        } else {
-            continue;
-        }
-    }
     FVector geocoord = gamecoordinate;
 
-    // subtract landscape center from coordinate
-    if(landscape){
-        FVector origin, boxExtends;
-        landscape->GetActorBounds(true, origin, boxExtends, false);
+    if(bSnapToLandscape) {
+        // see if there is a landscape
+        ALandscape * landscape = nullptr;
+        for (TObjectIterator<ALandscape> Itr; Itr; ++Itr)
+        {
+            if(Itr->IsA(ALandscape::StaticClass())){
+                landscape = *Itr;
+                break;
+            } else {
+                continue;
+            }
+        }
 
-        // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Landscape origin: %s"), *origin.ToString())
-        geocoord -= origin;
+        // subtract landscape center from coordinate
+        if(landscape){
+            FVector origin, boxExtends;
+            landscape->GetActorBounds(true, origin, boxExtends, false);
+
+            // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: Landscape origin: %s"), *origin.ToString())
+            geocoord -= origin;
+        }
     }
 
     // to meters with reverse y direction

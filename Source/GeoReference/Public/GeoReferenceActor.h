@@ -29,6 +29,9 @@ public:
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     bool bShowBounds;
 
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    bool bSnapToLandscape;
+
     UFUNCTION(BlueprintCallable)
     FVector ToGameCoordinate(FVector geocoordinate);
 
