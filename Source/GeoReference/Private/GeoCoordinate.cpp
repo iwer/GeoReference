@@ -15,7 +15,8 @@ UGeoCoordinate::UGeoCoordinate(double longitude, double latitude, int EPSGNumber
 {
     // transform input coordinates in crs EPSGNumber to WGS84
     OGRSpatialReference sourceSRS;
-    auto err = sourceSRS.importFromEPSG(EPSGNumber);
+    FString wkt = GDALHelpers::WktFromEPSG(EPSGNumber,true);
+    auto err = sourceSRS.importFromWkt(TCHAR_TO_ANSI(*wkt));
     if(err != OGRERR_NONE) {
         UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
     }
@@ -49,7 +50,8 @@ FVector2D UGeoCoordinate::ToFVector2DInEPSG(int EPSGNumber)
     sourceSRS.SetWellKnownGeogCS("WGS84");
 
     OGRSpatialReference targetSRS;
-    auto err = targetSRS.importFromEPSG(EPSGNumber);
+    FString wkt = GDALHelpers::WktFromEPSG(EPSGNumber, true);
+    auto err = targetSRS.importFromWkt(TCHAR_TO_ANSI(*wkt));
     if(err != OGRERR_NONE) {
         UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
         return FVector2D();
@@ -189,7 +191,8 @@ UGeoCoordinate::DVector2D UGeoCoordinate::Add(UGeoCoordinate &other, int EPSGNum
     sourceSRS.SetWellKnownGeogCS("WGS84");
 
     OGRSpatialReference targetSRS;
-    auto err = targetSRS.importFromEPSG(EPSGNumber);
+    FString wkt = GDALHelpers::WktFromEPSG(EPSGNumber, true);
+    auto err = targetSRS.importFromWkt(TCHAR_TO_ANSI(*wkt));
     if(err != OGRERR_NONE) {
         UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
         return UGeoCoordinate::DVector2D();
@@ -217,7 +220,8 @@ UGeoCoordinate::DVector2D UGeoCoordinate::Subtract(UGeoCoordinate &other, int EP
     sourceSRS.SetWellKnownGeogCS("WGS84");
 
     OGRSpatialReference targetSRS;
-    auto err = targetSRS.importFromEPSG(EPSGNumber);
+    FString wkt = GDALHelpers::WktFromEPSG(EPSGNumber,true);
+    auto err = targetSRS.importFromWkt(TCHAR_TO_ANSI(*wkt));
     if(err != OGRERR_NONE) {
         UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
         return UGeoCoordinate::DVector2D();
