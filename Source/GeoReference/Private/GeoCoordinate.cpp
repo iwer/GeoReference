@@ -6,116 +6,76 @@
 #include "GDALHelpers.h"
 
 UGeoCoordinate::UGeoCoordinate()
-	: UGeoCoordinate(0,0,EGeoCoordinateType::GCT_UNDEFINED, -1, true)
+    : Longitude(0)
+    , Latitude(0)
 {}
 
-UGeoCoordinate::UGeoCoordinate(double longitude, double latitude, EGeoCoordinateType type, int utmZone, bool bNorthernHemi)
-	: Longitude(longitude)
-	, Latitude(latitude)
-	, Type(type)
-    , UTMZone(utmZone)
-    , bNorthernHemisphere(bNorthernHemi)
+UGeoCoordinate::UGeoCoordinate(double longitude, double latitude, int EPSGNumber)
+    : UGeoCoordinate()
 {
-    if(type==EGeoCoordinateType::GCT_UTM && utmZone == -1) {
-        UE_LOG(LogTemp,Error,TEXT("UGeoCoordinate: UTM zone undefined for (%f, %f)"), Latitude, Longitude);
+    // transform input coordinates in crs EPSGNumber to WGS84
+    OGRSpatialReference sourceSRS;
+    auto err = sourceSRS.importFromEPSG(EPSGNumber);
+    if(err != OGRERR_NONE) {
+        UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
     }
+
+    OGRSpatialReference targetSRS;
+    targetSRS.SetWellKnownGeogCS("WGS84");
+
+    OGRPoint point(longitude, latitude);
+
+    point.assignSpatialReference(&sourceSRS);
+    point.transformTo(&targetSRS);
+
+    Longitude = point.getX();
+    Latitude = point.getY();
 }
 
 FVector2D UGeoCoordinate::ToFVector2D()
 {
-	return FVector2D(Longitude, Latitude);
+    return FVector2D(Longitude, Latitude);
+}
+FVector2D UGeoCoordinate::ToFVector2DInUTM()
+{
+    int utmZone = GetUTMZone(Longitude, Latitude);
+    int epsgNum = GetEPSGForUTM(utmZone, Latitude>=0);
+    return ToFVector2DInEPSG(epsgNum);
 }
 
-UGeoCoordinate UGeoCoordinate::ToWGS84()
+FVector2D UGeoCoordinate::ToFVector2DInEPSG(int EPSGNumber)
 {
-	if (Type == EGeoCoordinateType::GCT_UNDEFINED) {
-		UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Cannot convert undefined coordinate type."));
-		return UGeoCoordinate();
-	}
-	if (Type == EGeoCoordinateType::GCT_WGS84) {
-		// UE_LOG(LogTemp, Warning, TEXT("UGeoCoordinate: Coordinate is already WSG84, returning copy."));
-		return UGeoCoordinate(Longitude, Latitude, EGeoCoordinateType::GCT_WGS84);
-	}
+    OGRSpatialReference sourceSRS;
+    sourceSRS.SetWellKnownGeogCS("WGS84");
 
-	return TransformToWGS84();
-}
-
-UGeoCoordinate UGeoCoordinate::ToUTM(int utmZone, bool bNorth)
-{
-    int zone = UTMZone;
-    bool nrth = bNorthernHemisphere;
-    if(utmZone != -1){
-        zone = utmZone;
-        nrth = bNorth;
+    OGRSpatialReference targetSRS;
+    auto err = targetSRS.importFromEPSG(EPSGNumber);
+    if(err != OGRERR_NONE) {
+        UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
+        return FVector2D();
     }
+    OGRPoint point(Longitude, Latitude);
+    point.assignSpatialReference(&sourceSRS);
+    point.transformTo(&targetSRS);
 
-	if (Type == EGeoCoordinateType::GCT_UNDEFINED) {
-		UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Cannot convert undefined coordinate type."));
-		return UGeoCoordinate();
-	}
-	if (Type == EGeoCoordinateType::GCT_UTM) {
-		// UE_LOG(LogTemp, Warning, TEXT("UGeoCoordinate: Coordinate is already UTM, returning copy."));
-
-		return UGeoCoordinate(Longitude, Latitude, EGeoCoordinateType::GCT_UTM, UTMZone, bNorthernHemisphere);
-	}
-
-    // UE_LOG(LogTemp,Warning,TEXT("UGeoCoordinate: 2U result: %d %d"), utmZone, bNorth);
-	return TransformToUTM(zone, nrth);
+    return FVector2D(point.getX(), point.getY());
 }
 
 FVector UGeoCoordinate::ToGameCoordinate(URegionOfInterest &ROI)
 {
     // calculate utm coordinate of lon/lat in utm zone of roi origin
-    auto utm = ToUTM(ROI.UTMZone, ROI.bNorthernHemisphere);
+    int roiUtmZone = GetUTMZone(ROI.Location.Longitude, ROI.Location.Latitude);
+    int epsgNum = GetEPSGForUTM(roiUtmZone, ROI.Location.Latitude >= 0);
+
+    auto diff = Subtract(ROI.Location, epsgNum);
 
     // calculate relative to roi origin and flip y-axis
-    FVector2D pos = (utm - ROI.Location.ToUTM()) * FVector2D(1, -1);
+    // FVector2D pos = (utm - ROI.Location.ToUTM()) * FVector2D(1, -1);
 
     // scale m to cm
-    pos *= 100;
+    // pos *= 100;
 
-    return FVector(pos.X, pos.Y, 0);
-}
-
-UGeoCoordinate UGeoCoordinate::TransformToWGS84(){
-    OGRSpatialReference sourceSRS;
-    sourceSRS.SetUTM(UTMZone, bNorthernHemisphere);
-
-    OGRSpatialReference targetSRS;
-    targetSRS.SetWellKnownGeogCS("WGS84");
-
-    OGRPoint point(Longitude, Latitude);
-    point.assignSpatialReference(&sourceSRS);
-    point.transformTo(&targetSRS);
-    return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_WGS84, -1, true);
-}
-
-UGeoCoordinate UGeoCoordinate::TransformToUTM(int TargetUTMZone, bool bTargetNorthernHemi){
-    OGRSpatialReference sourceSRS;
-    sourceSRS.SetWellKnownGeogCS("WGS84");
-
-    OGRSpatialReference targetSRS;
-
-    int utmzone = UGeoCoordinate::GetUTMZone(Longitude, Latitude);
-    bool north = Latitude >= 0;
-    if(TargetUTMZone != -1){
-        utmzone = TargetUTMZone;
-        north = bTargetNorthernHemi;
-    }
-
-    targetSRS.SetUTM(utmzone, north);
-
-    OGRPoint point(Longitude, Latitude);
-    // if latitude is bigger than 84 or smaller than -80 there is no utm zone
-    if (UGeoCoordinate::GetUTMLetter(Latitude) == 'Z') {
-        UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: latitude %f is outside defined UTM Zones!"), Latitude);
-        return UGeoCoordinate(0,0,EGeoCoordinateType::GCT_UTM, -1, Latitude >= 0);
-    }
-
-    point.assignSpatialReference(&sourceSRS);
-    point.transformTo(&targetSRS);
-    // UE_LOG(LogTemp,Warning,TEXT("FGeoReferenceHelper: W2U result: %f, %f Zone: %d %d (called with %d %d)"),point.getX(), point.getY(), utmzone, north, utmZone, northernHemi);
-    return UGeoCoordinate(point.getX(), point.getY(), EGeoCoordinateType::GCT_UTM, utmzone, north);
+    return FVector(diff.X * 100, diff.Y * -100, 0);
 }
 
 int UGeoCoordinate::GetUTMZone(double Lon, double Lat)
@@ -172,37 +132,105 @@ char UGeoCoordinate::GetUTMLetter(double Lat)
     return LetterDesignator;
 }
 
-UGeoCoordinate UGeoCoordinate::operator+(const UGeoCoordinate & other)
+int UGeoCoordinate::GetEPSGForUTM(int utmZone, bool bNorthernHemi)
 {
-    if(Type == other.Type) {
-        if(Type == EGeoCoordinateType::GCT_UTM && (UTMZone != other.UTMZone || bNorthernHemisphere != other.bNorthernHemisphere)){
-            UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs UTMCoordinates in the same zone."))
-            return UGeoCoordinate();
-        }
-        return UGeoCoordinate(Longitude + other.Longitude,
-                            Latitude + other.Latitude,
-                            Type, UTMZone, bNorthernHemisphere);
+    int epsgCode = -1;
+    if(utmZone != -1) {
+        epsgCode = 32600;
+        epsgCode += utmZone;
+        if(!bNorthernHemi)
+            epsgCode += 100;
     }
-    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs arguments of same type."))
-    return UGeoCoordinate();
+    return epsgCode;
 }
 
-UGeoCoordinate UGeoCoordinate::operator-(const UGeoCoordinate & other)
+// UGeoCoordinate UGeoCoordinate::operator+(const UGeoCoordinate & other)
+// {
+//     if(Type == other.Type) {
+//         if(Type == EGeoCoordinateType::GCT_UTM && (UTMZone != other.UTMZone || bNorthernHemisphere != other.bNorthernHemisphere)){
+//             UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs UTMCoordinates in the same zone."))
+//             return UGeoCoordinate();
+//         }
+//         return UGeoCoordinate(Longitude + other.Longitude,
+//                             Latitude + other.Latitude,
+//                             Type, UTMZone, bNorthernHemisphere);
+//     }
+//     UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator+ needs arguments of same type."))
+//     return UGeoCoordinate();
+// }
+//
+// UGeoCoordinate UGeoCoordinate::operator-(const UGeoCoordinate & other)
+// {
+//     if(Type == other.Type) {
+//         if(Type == EGeoCoordinateType::GCT_UTM && (UTMZone != other.UTMZone || bNorthernHemisphere != other.bNorthernHemisphere)){
+//             UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs UTMCoordinates in the same zone.(this:%d, %d; Other: %d, %d)"),UTMZone, bNorthernHemisphere, other.UTMZone, other.bNorthernHemisphere)
+//             return UGeoCoordinate();
+//         }
+//         return UGeoCoordinate(Longitude - other.Longitude,
+//                             Latitude - other.Latitude,
+//                             Type, UTMZone, bNorthernHemisphere);
+//     }
+//     UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs arguments of same type."))
+//     return UGeoCoordinate();
+// }
+//
+// FVector2D UGeoCoordinate::operator*(const FVector2D & other)
+// {
+//     return FVector2D(Longitude * other.X, Latitude * other.Y);
+// }
+
+UGeoCoordinate::DVector2D UGeoCoordinate::Add(UGeoCoordinate &other, int EPSGNumber)
 {
-    if(Type == other.Type) {
-        if(Type == EGeoCoordinateType::GCT_UTM && (UTMZone != other.UTMZone || bNorthernHemisphere != other.bNorthernHemisphere)){
-            UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs UTMCoordinates in the same zone.(this:%d, %d; Other: %d, %d)"),UTMZone, bNorthernHemisphere, other.UTMZone, other.bNorthernHemisphere)
-            return UGeoCoordinate();
-        }
-        return UGeoCoordinate(Longitude - other.Longitude,
-                            Latitude - other.Latitude,
-                            Type, UTMZone, bNorthernHemisphere);
+    if(EPSGNumber == EPSG_WGS84) {
+        return UGeoCoordinate::DVector2D(Longitude + other.Longitude, Latitude + other.Latitude);
     }
-    UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Operator- needs arguments of same type."))
-    return UGeoCoordinate();
+
+    OGRSpatialReference sourceSRS;
+    sourceSRS.SetWellKnownGeogCS("WGS84");
+
+    OGRSpatialReference targetSRS;
+    auto err = targetSRS.importFromEPSG(EPSGNumber);
+    if(err != OGRERR_NONE) {
+        UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
+        return UGeoCoordinate::DVector2D();
+    }
+
+    OGRPoint thisPoint(Longitude, Latitude);
+    OGRPoint otherPoint(other.Longitude, other.Latitude);
+
+    thisPoint.assignSpatialReference(&sourceSRS);
+    thisPoint.transformTo(&targetSRS);
+
+    otherPoint.assignSpatialReference(&sourceSRS);
+    otherPoint.transformTo(&targetSRS);
+
+    return UGeoCoordinate::DVector2D(thisPoint.getX() + otherPoint.getX(), thisPoint.getY() + otherPoint.getY());
 }
 
-FVector2D UGeoCoordinate::operator*(const FVector2D & other)
+UGeoCoordinate::DVector2D UGeoCoordinate::Subtract(UGeoCoordinate &other, int EPSGNumber)
 {
-    return FVector2D(Longitude * other.X, Latitude * other.Y);
+    if(EPSGNumber == EPSG_WGS84) {
+        return UGeoCoordinate::DVector2D(Longitude - other.Longitude, Latitude - other.Latitude);
+    }
+
+    OGRSpatialReference sourceSRS;
+    sourceSRS.SetWellKnownGeogCS("WGS84");
+
+    OGRSpatialReference targetSRS;
+    auto err = targetSRS.importFromEPSG(EPSGNumber);
+    if(err != OGRERR_NONE) {
+        UE_LOG(LogTemp, Error, TEXT("UGeoCoordinate: Error constructing OGRSpatialReference from EPSG number %d"), EPSGNumber);
+        return UGeoCoordinate::DVector2D();
+    }
+
+    OGRPoint thisPoint(Longitude, Latitude);
+    OGRPoint otherPoint(other.Longitude, other.Latitude);
+
+    thisPoint.assignSpatialReference(&sourceSRS);
+    thisPoint.transformTo(&targetSRS);
+
+    otherPoint.assignSpatialReference(&sourceSRS);
+    otherPoint.transformTo(&targetSRS);
+
+    return UGeoCoordinate::DVector2D(thisPoint.getX() - otherPoint.getX(), thisPoint.getY() - otherPoint.getY());
 }

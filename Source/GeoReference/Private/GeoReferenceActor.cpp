@@ -7,22 +7,22 @@
 // Sets default values
 AGeoReferenceActor::AGeoReferenceActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
-	ROI = CreateDefaultSubobject<URegionOfInterest>(FName(TEXT("RegionOfInterest")));
+     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = false;
+    ROI = CreateDefaultSubobject<URegionOfInterest>(FName(TEXT("RegionOfInterest")));
 }
 
 // Called when the game starts or when spawned
 void AGeoReferenceActor::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
 
 }
 
 // Called every frame
 void AGeoReferenceActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
 }
 
@@ -33,10 +33,10 @@ void AGeoReferenceActor::OnConstruction(const FTransform & Transform)
     // UE_LOG(LogTemp, Warning, TEXT("AGeoReferenceActor: ROI: %s"), *ROI->ToString())
 
     if(bShowBounds) {
-        FVector2D nw = ROI->GetCorner(EROICorner::NW, EGeoCoordinateType::GCT_WGS84);
-        FVector2D sw = ROI->GetCorner(EROICorner::SW, EGeoCoordinateType::GCT_WGS84);
-        FVector2D ne = ROI->GetCorner(EROICorner::NE, EGeoCoordinateType::GCT_WGS84);
-        FVector2D se = ROI->GetCorner(EROICorner::SE, EGeoCoordinateType::GCT_WGS84);
+        FVector2D nw = ROI->GetCorner(EROICorner::NW, UGeoCoordinate::EPSG_WGS84);
+        FVector2D sw = ROI->GetCorner(EROICorner::SW, UGeoCoordinate::EPSG_WGS84);
+        FVector2D ne = ROI->GetCorner(EROICorner::NE, UGeoCoordinate::EPSG_WGS84);
+        FVector2D se = ROI->GetCorner(EROICorner::SE, UGeoCoordinate::EPSG_WGS84);
 
         FVector nwg = ToGameCoordinate(FVector(nw, 0));
         FVector swg = ToGameCoordinate(FVector(sw, 0));
@@ -78,7 +78,7 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
         }
     }
 
-    UGeoCoordinate geocoord(geocoordinate.X, geocoordinate.Y, EGeoCoordinateType::GCT_WGS84);
+    UGeoCoordinate geocoord(geocoordinate.X, geocoordinate.Y, UGeoCoordinate::EPSG_WGS84);
     FVector gamecoord = geocoord.ToGameCoordinate(*ROI);
 
     if(landscape){
@@ -90,7 +90,7 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
     }
     // UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: 2GC ROI: %s"), *ROI->ToString())
     gamecoord.Z = geocoordinate.Z;
-	return gamecoord;
+    return gamecoord;
 }
 
 FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
@@ -103,7 +103,7 @@ FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
     UGeoCoordinate coord = CalculateGeoLocation(gamecoordinate);
 
     // make WGS48 FVector and return
-    return FVector(coord.ToWGS84().ToFVector2D(), 0);
+    return FVector(coord.ToFVector2DInEPSG(UGeoCoordinate::EPSG_WGS84), 0);
 }
 
 UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) {
@@ -133,10 +133,10 @@ UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) 
     geocoord *= FVector(.01, -.01, .01);
 
     // add UTM offset of ROI center
-    geocoord += FVector(ROI->Location.ToUTM().ToFVector2D(), 0);
+    geocoord += FVector(ROI->Location.ToFVector2DInUTM(), 0);
 
     // Make UTM geocoord
-    return UGeoCoordinate(geocoord.X, geocoord.Y, EGeoCoordinateType::GCT_UTM, ROI->UTMZone, ROI->bNorthernHemisphere);
+    return UGeoCoordinate(geocoord.X, geocoord.Y, UGeoCoordinate::GetEPSGForUTM(ROI->UTMZone, ROI->bNorthernHemisphere));
 }
 
 bool AGeoReferenceActor::IsGameCoordInsideROI(FVector gamecoord)
@@ -153,6 +153,6 @@ bool AGeoReferenceActor::IsGeoCoordInsideROI(FVector geocoord)
     if(!ROI)
         return false;
 
-    UGeoCoordinate coord(geocoord.X, geocoord.Y, EGeoCoordinateType::GCT_WGS84);
+    UGeoCoordinate coord(geocoord.X, geocoord.Y, UGeoCoordinate::EPSG_WGS84);
     return ROI->Surrounds(coord);
 }

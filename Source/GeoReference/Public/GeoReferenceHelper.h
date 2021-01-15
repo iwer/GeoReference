@@ -7,6 +7,6 @@
 class GEOREFERENCE_API FGeoReferenceHelper
 {
 public:
-	static bool IsWGS84(OGRSpatialReferenceH ref);
-	static bool IsUTM(OGRSpatialReferenceH ref);
+    static bool IsWGS84(OGRSpatialReferenceH ref);
+    static bool IsUTM(OGRSpatialReferenceH ref);
 };

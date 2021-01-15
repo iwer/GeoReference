@@ -10,18 +10,18 @@
 
 UENUM(BlueprintType)
 enum EROICorner {
-	NW,
-	SW,
-	NE,
-	SE
+    NW,
+    SW,
+    NE,
+    SE
 };
 
 UENUM(BlueprintType)
 enum EROIBorder {
-	North,
-	South,
-	West,
-	East
+    North,
+    South,
+    West,
+    East
 };
 
 /**
@@ -36,52 +36,52 @@ enum EROIBorder {
 UCLASS(BlueprintType)
 class GEOREFERENCE_API URegionOfInterest : public UObject
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 public:
     /**
     *
     */
-	UGeoCoordinate Location;
+    UGeoCoordinate Location;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
-	FVector2D WGS84Coordinates;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
+    FVector2D WGS84Coordinates;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
-	FVector2D UTMCoordinates;
+    UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
+    FVector2D UTMCoordinates;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
-	float SizeM;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ROI", Meta = (ExposeOnSpawn = "true"))
+    float SizeM;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
-	int UTMZone;
+    UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
+    int UTMZone;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
-	bool bNorthernHemisphere;
+    UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "ROI")
+    bool bNorthernHemisphere;
 
 
-	URegionOfInterest();
-	URegionOfInterest(FVector2D geocoordinates, float size);
-	URegionOfInterest(GDALDatasetRef gdaldata);
+    URegionOfInterest();
+    URegionOfInterest(FVector2D geocoordinates, float size);
+    URegionOfInterest(GDALDatasetRef gdaldata);
     URegionOfInterest(const char * crsString, double east, double west, double north, double south);
-	~URegionOfInterest();
+    ~URegionOfInterest();
 
     static void GetSize(GDALDatasetRef &gdaldata, double &OutWidth, double &OutHeight);
 
 
     UFUNCTION(BlueprintCallable, Category = "ROI|Initializer")
-	void Init(FVector2D geocoordinates, float size);
-	void InitFromGDAL(GDALDatasetRef &gdaldata);
+    void Init(FVector2D geocoordinates, float size);
+    void InitFromGDAL(GDALDatasetRef &gdaldata);
     void InitFromCRSAndEdges(const char * crsString, double east, double west, double north, double south);
 
-	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
-	FVector2D GetCorner(EROICorner corner, EGeoCoordinateType coordinatetype);
+    UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
+    FVector2D GetCorner(EROICorner corner, int EPSGNumber);
 
-	UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
-	float GetBorder(EROIBorder border, EGeoCoordinateType coordinatetype);
+    UFUNCTION(BlueprintCallable, Category = "ROI|Methods")
+    float GetBorder(EROIBorder border, int EPSGNumber);
 
 
     bool Surrounds(UGeoCoordinate &coord);
 
 
-	FString ToString();
+    FString ToString();
 };
