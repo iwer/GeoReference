@@ -49,7 +49,7 @@ void URegionOfInterest::GetSize(GDALDatasetRef &gdaldata, double &OutWidth, doub
     if (FGeoReferenceHelper::IsWGS84(OSRNewSpatialReference(crs))) {
         double approxLon = west + (east - west) / 2;
         double approxLat = south + (north - south) / 2;
-        int epsgNum = UGeoCoordinate::GetEPSGForUTM(UGeoCoordinate::GetUTMZone(approxLon, approxLat), approxLat >= 0);
+        int epsgNum = FGeoReferenceHelper::GetEPSGForUTM(FGeoReferenceHelper::GetUTMZone(approxLon, approxLat), approxLat >= 0);
 
         auto utm_nw = UGeoCoordinate(west, north, UGeoCoordinate::EPSG_WGS84).ToFVector2DInEPSG(epsgNum);
         auto utm_ne = UGeoCoordinate(east, north, UGeoCoordinate::EPSG_WGS84).ToFVector2DInEPSG(epsgNum);
@@ -76,7 +76,7 @@ void URegionOfInterest::Init(FVector2D geocoordinates, float size)
     WGS84Coordinates = geocoordinates;
     UTMCoordinates = Location.ToFVector2DInUTM();
 
-    UTMZone = UGeoCoordinate::GetUTMZone(geocoordinates.X, geocoordinates.Y);
+    UTMZone = FGeoReferenceHelper::GetUTMZone(geocoordinates.X, geocoordinates.Y);
     bNorthernHemisphere = geocoordinates.Y >= 0;
 
     // UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: After Init: %s"), *ToString())
@@ -104,9 +104,9 @@ void URegionOfInterest::InitFromCRSAndEdges(const char * crsString, double east,
 
     if (FGeoReferenceHelper::IsWGS84(crs)) {
         // rough (wgs) center for utmzone calculation
-        UTMZone = UGeoCoordinate::GetUTMZone(west + (east - west), south + (north - south));
+        UTMZone = FGeoReferenceHelper::GetUTMZone(west + (east - west), south + (north - south));
         bNorthernHemisphere = (south + (north - south) >= 0);
-        int epsgNum = UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere);
+        int epsgNum = FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere);
 
 
         auto utm_nw = UGeoCoordinate(west, north, UGeoCoordinate::EPSG_WGS84).ToFVector2DInEPSG(epsgNum);
@@ -128,7 +128,7 @@ void URegionOfInterest::InitFromCRSAndEdges(const char * crsString, double east,
         int northhemi;
         UTMZone = OSRGetUTMZone(crs, &northhemi);
         bNorthernHemisphere = (northhemi == TRUE);
-        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
+        Location = UGeoCoordinate((east - west) / 2 + west, (north - south) / 2 + south, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
 
         UTMCoordinates = FVector2D((east - west) / 2 + west, (north - south) / 2 + south);
         WGS84Coordinates = Location.ToFVector2DInEPSG(UGeoCoordinate::EPSG_WGS84);
@@ -156,7 +156,7 @@ FVector2D URegionOfInterest::GetCorner(EROICorner corner, int EPSGNumber)
         cornerCoords = FVector2D(UTMCoordinates.X + SizeM/2, UTMCoordinates.Y - SizeM/2);
     }
 
-    return UGeoCoordinate(cornerCoords.X, cornerCoords.Y, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere)).ToFVector2DInEPSG(EPSGNumber);
+    return UGeoCoordinate(cornerCoords.X, cornerCoords.Y, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere)).ToFVector2DInEPSG(EPSGNumber);
 }
 
 float URegionOfInterest::GetBorder(EROIBorder border, int EPSGNumber)
@@ -188,7 +188,7 @@ float URegionOfInterest::GetBorder(EROIBorder border, int EPSGNumber)
         borderCoords.Y = UTMCoordinates.Y;
     }
 
-    UGeoCoordinate bCoord(borderCoords.X, borderCoords.Y, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
+    UGeoCoordinate bCoord(borderCoords.X, borderCoords.Y, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
 
     // transform to target CRS
     auto epsgCoord = bCoord.ToFVector2DInEPSG(EPSGNumber);
@@ -207,10 +207,10 @@ float URegionOfInterest::GetBorder(EROIBorder border, int EPSGNumber)
 bool URegionOfInterest::Surrounds(UGeoCoordinate &coord)
 {
     FVector2D utm = coord.ToFVector2DInUTM();
-    float west = GetBorder(EROIBorder::West, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
-    float east = GetBorder(EROIBorder::East, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
-    float south = GetBorder(EROIBorder::South, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
-    float north = GetBorder(EROIBorder::North, UGeoCoordinate::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
+    float west = GetBorder(EROIBorder::West, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
+    float east = GetBorder(EROIBorder::East, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
+    float south = GetBorder(EROIBorder::South, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
+    float north = GetBorder(EROIBorder::North, FGeoReferenceHelper::GetEPSGForUTM(UTMZone, bNorthernHemisphere));
 
     return (utm.X >= west && utm.X <= east
         && utm.Y >= south && utm.Y <= north);

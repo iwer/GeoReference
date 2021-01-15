@@ -2,7 +2,7 @@
 
 
 #include "GeoReferenceActor.h"
-
+#include "GeoReferenceHelper.h"
 
 // Sets default values
 AGeoReferenceActor::AGeoReferenceActor()
@@ -136,7 +136,7 @@ UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) 
     geocoord += FVector(ROI->Location.ToFVector2DInUTM(), 0);
 
     // Make UTM geocoord
-    return UGeoCoordinate(geocoord.X, geocoord.Y, UGeoCoordinate::GetEPSGForUTM(ROI->UTMZone, ROI->bNorthernHemisphere));
+    return UGeoCoordinate(geocoord.X, geocoord.Y, FGeoReferenceHelper::GetEPSGForUTM(ROI->UTMZone, ROI->bNorthernHemisphere));
 }
 
 bool AGeoReferenceActor::IsGameCoordInsideROI(FVector gamecoord)
