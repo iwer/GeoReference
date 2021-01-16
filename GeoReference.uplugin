@@ -1,7 +1,7 @@
 {
     "FileVersion": 3,
     "Version": 1,
-    "VersionName": "1.0",
+    "VersionName": "0.0.4",
     "FriendlyName": "GeoReference",
     "Description": "Provides a reference and conversion methods between gamecoordinates and geo-coordinates",
     "Category": "Other",
