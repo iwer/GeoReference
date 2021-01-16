@@ -1,7 +1,7 @@
 GeoReference - UE4 Plugin
 ===========================
 
-This plugin provides a reference between game coordinates and geo-coordinates. The core of the concept is the GeoRegion which defines latitude and longitude of the world origin. Additionally a map size in meter is given to calculate border coordinates in WSG84 and UTM. This information can be used to get georeferenced objects to the correct position or to define a region of interest (ROI) for ressource acquisition.
+This plugin provides a reference between game coordinates and geo-coordinates. The core of the concept is the GeoRegion which defines latitude and longitude of the world origin. Additionally a map size in meter is given to calculate border coordinates in WSG84 and UTM. This information can be used to get georeferenced objects to the correct position. GeoCoordinates are internally stored as double precision WGS84 coordinates but can be initialized from and converted to any valid EPSG coded coordinate reference system.
 
 ### GeoReferenceActor
 Has to be placed in the world to define the GeoReference. Is used by GeoLocatedActors to calculate game-coordinates.
@@ -37,6 +37,8 @@ PublicDependencyModuleNames.AddRange(
   }
 );
 ```
+
+Windows users need to add an environment variable named GDAL_DATA which points to C:/Path/to/Project/Binaries/Data/GDAL
 
 ## Attribution
 Contains two functions for UTM Zone calculation originally written by Chuck Gantz which he posted in an answer on the newsgroups sci.geo.geology and sci.geo.satellite-nav in 1998 ([Archived conversation](http://www.gpsy.com/gpsinfo/geotoutm/))

@@ -10,11 +10,11 @@
 UCLASS()
 class GEOREFERENCE_API AGeoReferenceActor : public AActor
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
-	AGeoReferenceActor();
+    // Sets default values for this actor's properties
+    AGeoReferenceActor();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float Longitude;
@@ -23,11 +23,14 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float SizeM;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	URegionOfInterest * ROI;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    URegionOfInterest * ROI;
 
     UPROPERTY(BlueprintReadWrite, EditAnywhere)
     bool bShowBounds;
+
+    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    bool bSnapToLandscape;
 
     UFUNCTION(BlueprintCallable)
     FVector ToGameCoordinate(FVector geocoordinate);
@@ -42,12 +45,12 @@ public:
     bool IsGeoCoordInsideROI(FVector geocoord);
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
 
 public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    // Called every frame
+    virtual void Tick(float DeltaTime) override;
     virtual void OnConstruction(const FTransform & Transform) override;
 
 private:
