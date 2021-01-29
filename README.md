@@ -38,7 +38,5 @@ PublicDependencyModuleNames.AddRange(
 );
 ```
 
-Windows users need to add an environment variable named GDAL_DATA which points to C:/Path/to/Project/Binaries/Data/GDAL
-
 ## Attribution
 Contains two functions for UTM Zone calculation originally written by Chuck Gantz which he posted in an answer on the newsgroups sci.geo.geology and sci.geo.satellite-nav in 1998 ([Archived conversation](http://www.gpsy.com/gpsinfo/geotoutm/))

@@ -6,8 +6,9 @@
 
 
 URegionOfInterest::URegionOfInterest()
-    : URegionOfInterest(FVector2D(),0)
 {
+    SizeM = 0.0;
+    UTMZone = -1;
 }
 
 URegionOfInterest::URegionOfInterest(FVector2D geocoordinates, float size)
