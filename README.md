@@ -9,6 +9,12 @@ Has to be placed in the world to define the GeoReference. Is used by GeoLocatedA
 ### GeoLocatedActor
 Can be used to derive child blueprints which can be placed at a geo-coordinate which is automatically translated to game-coordinates. Needs a GeoReferenceActor placed in the world.
 
+### GeoLocationComponent
+Can be added to any Actor to place the actor at geo coordinates. Sets the owning actors world location. Needs a GeoReferenceActor placed in the world.
+
+### GPSComponent
+Can be used to get owning Actors world location in geo coordinates. Needs a GeoReferenceActor placed in the world.
+
 ## Building
 
 This plugin uses [UnrealGDAL](https://github.com/TensorWorks/UnrealGDAL), [ue4cli](https://github.com/adamrehn/ue4cli) and [conan-ue4cli](https://github.com/adamrehn/conan-ue4cli) to build and manage the required GDAL libraries.
