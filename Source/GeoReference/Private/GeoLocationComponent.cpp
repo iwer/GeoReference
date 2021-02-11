@@ -26,64 +26,12 @@ void UGeoLocationComponent::BeginPlay()
 
 void UGeoLocationComponent::OnComponentCreated()
 {
-    //// Find GeoReference if exists, quit if not
-    //AGeoReferenceActor* GeoRef = nullptr;
-    //for (TObjectIterator<AGeoReferenceActor> Itr; Itr; ++Itr)
-    //{
-    //    if (Itr->IsA(AGeoReferenceActor::StaticClass())) {
-    //        GeoRef = *Itr;
-    //        break;
-    //    }
-    //    else {
-    //        continue;
-    //    }
-    //}
-    //if (!GeoRef) {
-    //    UE_LOG(LogTemp, Error, TEXT("UGeoLocationComponent: No AGeoReferenceActor found!"))
-    //        return;
-    //}
-
-    //// Transform to game coordinates
-    //FVector Location = GeoRef->ToGameCoordinate(FVector(Longitude, Latitude, 0));
-
-    //// If SnapToLandscape is enabled and there is a landscape
-    //if (bSnapToGround) {
-    //    Location = SnapToGround(Location, 100000);
-
-    //}
-
-    //GetOwner()->SetActorLocation(Location);
+    UpdateParentActorLocation();
 }
 
 void UGeoLocationComponent::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-    // Find GeoReference if exists, quit if not
-    AGeoReferenceActor* GeoRef = nullptr;
-    for (TObjectIterator<AGeoReferenceActor> Itr; Itr; ++Itr)
-    {
-        if (Itr->IsA(AGeoReferenceActor::StaticClass())) {
-            GeoRef = *Itr;
-            break;
-        }
-        else {
-            continue;
-        }
-    }
-    if (!GeoRef) {
-        UE_LOG(LogTemp, Error, TEXT("UGeoLocationComponent: No AGeoReferenceActor found!"))
-            return;
-    }
-
-    // Transform to game coordinates
-    FVector Location = GeoRef->ToGameCoordinate(FVector(Longitude, Latitude, 0));
-
-    // If SnapToLandscape is enabled and there is a landscape
-    if (bSnapToGround) {
-        Location = SnapToGround(Location, 100000);
-
-    }
-
-    GetOwner()->SetActorLocation(Location);
+    UpdateParentActorLocation();
 }
 
 // Called every frame
@@ -114,4 +62,35 @@ FVector UGeoLocationComponent::SnapToGround(const FVector& Vector, float Range)
         HitLocation.Z = Vector.Z;
     }
     return HitLocation;
+}
+
+void UGeoLocationComponent::UpdateParentActorLocation()
+{
+    // Find GeoReference if exists, quit if not
+    AGeoReferenceActor* GeoRef = nullptr;
+    for (TObjectIterator<AGeoReferenceActor> Itr; Itr; ++Itr)
+    {
+        if (Itr->IsA(AGeoReferenceActor::StaticClass())) {
+            GeoRef = *Itr;
+            break;
+        }
+        else {
+            continue;
+        }
+    }
+    if (!GeoRef) {
+        UE_LOG(LogTemp, Error, TEXT("UGeoLocationComponent: No AGeoReferenceActor found!"))
+            return;
+    }
+
+    // Transform to game coordinates
+    FVector Location = GeoRef->ToGameCoordinate(FVector(Longitude, Latitude, 0));
+
+    // If SnapToLandscape is enabled and there is a landscape
+    if (bSnapToGround) {
+        Location = SnapToGround(Location, 100000);
+
+    }
+
+    GetOwner()->SetActorLocation(Location);
 }
