@@ -26,6 +26,7 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	virtual void OnComponentCreated() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	FVector SnapToGround(const FVector& Vector, float Range);
 public:	
