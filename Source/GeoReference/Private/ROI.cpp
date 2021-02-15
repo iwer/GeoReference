@@ -125,7 +125,7 @@ void URegionOfInterest::InitFromCRSAndEdges(const char * crsString, double east,
 
     }
     // else if (FGeoReferenceHelper::IsUTM(crs)) {
-    else if (OSRIsProjected(crs) && strncmp(unitName, "Meter", 6) == 0) {
+    else if (OSRIsProjected(crs) && strncmp(unitName, "metre", 6) == 0) {
         int northhemi;
         UTMZone = OSRGetUTMZone(crs, &northhemi);
         bNorthernHemisphere = (northhemi == TRUE);
@@ -136,7 +136,7 @@ void URegionOfInterest::InitFromCRSAndEdges(const char * crsString, double east,
         SizeM = std::abs(std::min((east - west), (south - north)));
         // UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Zone: %d Loc: %f:%f UTM: %f:%f WGS: %f:%f"), UTMZone, Location.Longitude, Location.Latitude, UTMCoordinates.X, UTMCoordinates.Y, WGS84Coordinates.X, WGS84Coordinates.Y);
     } else {
-        UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), crsString);
+        UE_LOG(LogTemp, Warning, TEXT("URegionOfInterest: Unknown CRS: %s"), ANSI_TO_TCHAR(crsString));
     }
 }
 
