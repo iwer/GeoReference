@@ -10,8 +10,9 @@ UGeoLocationComponent::UGeoLocationComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-    bWantsInitializeComponent = true;
-
+    bWantsInitializeComponent = false;
+    GeoRef = nullptr;
+    
 	// ...
     Longitude = 0;
     Latitude = 0;
@@ -27,29 +28,6 @@ void UGeoLocationComponent::BeginPlay()
 	// ...
 
 }
-
-void UGeoLocationComponent::InitializeComponent()
-{
-    Super::InitializeComponent();
-    UpdateParentActorLocation();
-    UE_LOG(LogTemp, Warning, TEXT("UGeoLocationComponent::InitializeComponent() GeoCoords: %f, %f"), Longitude, Latitude)
-}
-
-//void UGeoLocationComponent::OnRegister()
-//{
-//    Super::OnRegister();
-//    UpdateParentActorLocation();
-//    UE_LOG(LogTemp, Warning, TEXT("UGeoLocationComponent::OnRegister() GeoCoords: %f, %f"), Longitude, Latitude)
-//}
-
-//void UGeoLocationComponent::PostInitProperties()
-//{
-//    Super::PostInitProperties();
-//    UpdateParentActorLocation();
-//    UE_LOG(LogTemp, Warning, TEXT("UGeoLocationComponent::PostInitProperties() GeoCoords: %f, %f"), Longitude, Latitude)
-//}
-
-
 
 // Called every frame
 void UGeoLocationComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -83,23 +61,11 @@ FVector UGeoLocationComponent::SnapToGround(const FVector& Vector, float Range)
 
 void UGeoLocationComponent::UpdateParentActorLocation()
 {
-    // Find GeoReference if exists, quit if not
-    AGeoReferenceActor* GeoRef = nullptr;
-    for (TObjectIterator<AGeoReferenceActor> Itr; Itr; ++Itr)
-    {
-        if (Itr->IsA(AGeoReferenceActor::StaticClass())) {
-            GeoRef = *Itr;
-            break;
-        }
-        else {
-            continue;
-        }
-    }
+    FindGeoReferenceActor();
     if (!GeoRef) {
         UE_LOG(LogTemp, Error, TEXT("UGeoLocationComponent: No AGeoReferenceActor found!"))
-            return;
+        return;
     }
-
     // Transform to game coordinates
     FVector Location = GeoRef->ToGameCoordinate(FVector(Longitude, Latitude, 0));
 
@@ -113,4 +79,19 @@ void UGeoLocationComponent::UpdateParentActorLocation()
     else {
         UE_LOG(LogTemp, Error, TEXT("UGeoLocationComponent: No Owner found!"))
     }
+}
+
+void UGeoLocationComponent::FindGeoReferenceActor()
+{
+    for (TObjectIterator<AGeoReferenceActor> Itr; Itr; ++Itr)
+    {
+        if (Itr->IsA(AGeoReferenceActor::StaticClass())) {
+            GeoRef = *Itr;
+            break;
+        }
+        else {
+            continue;
+        }
+    }
+
 }

@@ -7,6 +7,7 @@
 #include "GeoLocationComponent.generated.h"
 
 
+class AGeoReferenceActor;
 UCLASS( Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GEOREFERENCE_API UGeoLocationComponent : public UActorComponent
 {
@@ -20,21 +21,24 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "GeoLocation")
 		bool bSnapToGround;
 
+	AGeoReferenceActor* GeoRef;
+	
+
 	// Sets default values for this component's properties
 	UGeoLocationComponent();
 	FVector SnapToGround(const FVector& Vector, float Range);
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateParentActorLocation();
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	//virtual void OnRegister() override;
-	//virtual void PostInitProperties() override;
-	virtual void InitializeComponent() override;
-
+	
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 private:
-	void UpdateParentActorLocation();
+	void FindGeoReferenceActor();
 		
 };
