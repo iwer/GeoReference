@@ -45,4 +45,7 @@ PublicDependencyModuleNames.AddRange(
 ```
 
 ## Attribution
-Contains two functions for UTM Zone calculation originally written by Chuck Gantz which he posted in an answer on the newsgroups sci.geo.geology and sci.geo.satellite-nav in 1998 ([Archived conversation](http://www.gpsy.com/gpsinfo/geotoutm/))
+Contains two functions for UTM Zone calculation originally written by Chuck Gantz which he posted in an answer on the newsgroups sci.geo.geology and sci.geo.satellite-nav in 1998 ([Archived conversation](http://www.gpsy.com/gpsinfo/geotoutm/)).
+
+## Funding
+Development of this code was partially funded by the German Federal Ministry of Education and Research (BMBF) under funding reference number 13FH1I01IA.
