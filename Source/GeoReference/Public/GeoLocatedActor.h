@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) Iwer Petersen. All rights reserved.
 
 #pragma once
 
@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ROI.h"
 #include "GeoReferenceActor.h"
+#include "GeoLocationComponent.h"
 #include "Components/SceneComponent.h"
 #include "Landscape.h"
 
@@ -17,28 +18,19 @@ class GEOREFERENCE_API AGeoLocatedActor : public AActor
     GENERATED_BODY()
 
 public:
-    UPROPERTY(BlueprintReadWrite, EditAnywhere)
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
     USceneComponent * Root;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    float Longitude;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    float Latitude;
-    UPROPERTY(BlueprintReadWrite, EditAnywhere)
-    bool bSnapToGround;
+    UPROPERTY(BlueprintReadOnly, VisibleAnywhere, meta=(ExposeFunctionCategories = "GeoLocation"))
+    UGeoLocationComponent * GeoLocation;
 
     // Sets default values for this actor's properties
     AGeoLocatedActor();
 
 
 protected:
-    AGeoReferenceActor * GeoRef;
-    ALandscape * Landscape;
-
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
     virtual void OnConstruction(const FTransform & Transform) override;
-
-    FVector SnapToGround(const FVector &Vector, float Range);
 
 public:
     // Called every frame

@@ -9,6 +9,12 @@ Has to be placed in the world to define the GeoReference. Is used by GeoLocatedA
 ### GeoLocatedActor
 Can be used to derive child blueprints which can be placed at a geo-coordinate which is automatically translated to game-coordinates. Needs a GeoReferenceActor placed in the world.
 
+### GeoLocationComponent
+Can be added to any Actor to place the actor at geo coordinates. Sets the owning actors world location. Needs a GeoReferenceActor placed in the world.
+
+### GPSComponent
+Can be used to get owning Actors world location in geo coordinates. Needs a GeoReferenceActor placed in the world.
+
 ## Building
 
 This plugin uses [UnrealGDAL](https://github.com/TensorWorks/UnrealGDAL), [ue4cli](https://github.com/adamrehn/ue4cli) and [conan-ue4cli](https://github.com/adamrehn/conan-ue4cli) to build and manage the required GDAL libraries.
@@ -39,4 +45,7 @@ PublicDependencyModuleNames.AddRange(
 ```
 
 ## Attribution
-Contains two functions for UTM Zone calculation originally written by Chuck Gantz which he posted in an answer on the newsgroups sci.geo.geology and sci.geo.satellite-nav in 1998 ([Archived conversation](http://www.gpsy.com/gpsinfo/geotoutm/))
+Contains two functions for UTM Zone calculation originally written by Chuck Gantz which he posted in an answer on the newsgroups sci.geo.geology and sci.geo.satellite-nav in 1998 ([Archived conversation](http://www.gpsy.com/gpsinfo/geotoutm/)).
+
+## Funding
+Development of this code was partially funded by the German Federal Ministry of Education and Research (BMBF) under funding reference number 13FH1I01IA.
