@@ -122,7 +122,8 @@ FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
     return FVector(coord.ToFVector2DInEPSG(UGeoCoordinate::EPSG_WGS84), 0);
 }
 
-UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) {
+UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate)
+{
     FVector geocoord = gamecoordinate;
 
     if(bSnapToLandscape) {
@@ -174,4 +175,19 @@ bool AGeoReferenceActor::IsGeoCoordInsideROI(FVector geocoord)
 
     UGeoCoordinate coord(geocoord.X, geocoord.Y, UGeoCoordinate::EPSG_WGS84);
     return ROI->Surrounds(coord);
+}
+
+void AGeoReferenceActor::LoadFromGeotiff(FString FilePath)
+{
+    GDALDatasetRef gdaldata = GDALHelpers::OpenRaster(FilePath, true);
+
+    if(!gdaldata){
+        UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: Error opening Geotiff file: %s"), *FilePath);
+        return;
+    }
+
+    ROI->InitFromGDAL(gdaldata);
+    Longitude = ROI->WGS84Coordinates.X;
+    Latitude = ROI->WGS84Coordinates.Y;
+    SizeM = ROI->SizeM;
 }

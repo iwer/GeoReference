@@ -44,6 +44,12 @@ public:
     UFUNCTION(BlueprintCallable)
     bool IsGeoCoordInsideROI(FVector geocoord);
 
+    /**
+     * Load the geo information from a geotiff file to define GeoReferenceActor
+     */
+    UFUNCTION(BlueprintCallable)
+    void LoadFromGeotiff(FString FilePath);
+
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
