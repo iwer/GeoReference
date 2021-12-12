@@ -3,8 +3,8 @@
 ```mermaid
 classDiagram
     URegionOfInterest*--UGeoCoordinate
-    EROICorner--*URegionOfInterest
-    EROIBorder--*URegionOfInterest
+    EROICorner<--URegionOfInterest
+    EROIBorder<--URegionOfInterest
     URegionOfInterest-->GeoReferenceHelper
 
     AGeoReferenceActor*--URegionOfInterest
