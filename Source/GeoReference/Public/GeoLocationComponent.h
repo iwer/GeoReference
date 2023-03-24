@@ -31,6 +31,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UpdateParentActorLocation();
 
+	UFUNCTION(BlueprintCallable)
+	FVector ToGameCoordinate(float Long, float Lat);
+
+	UFUNCTION(BlueprintCallable)
+	FVector2D ToGeoCoordinate(FVector gamecoordinate);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

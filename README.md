@@ -19,7 +19,8 @@ Can be used to get owning Actors world location in geo coordinates. Needs a GeoR
 
 This plugin uses [UnrealGDAL](https://github.com/TensorWorks/UnrealGDAL), [ue4cli](https://github.com/adamrehn/ue4cli) and [conan-ue4cli](https://github.com/adamrehn/conan-ue4cli) to build and manage the required GDAL libraries.
 
-* Download a Release of UnrealGDAL and place it in the Plugins directory or clone and follow instructions to build UnrealGDAL from source.
+* Download a Release of UnrealGDAL and place it in the Plugins directory (only UE4.25) or clone and follow instructions to build UnrealGDAL from source.
+
 ## Usage
 
 Add GeoReference to `.uproject` or `.uplugin`

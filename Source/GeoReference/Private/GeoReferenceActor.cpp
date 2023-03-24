@@ -2,7 +2,10 @@
 
 
 #include "GeoReferenceActor.h"
+
+#include "DrawDebugHelpers.h"
 #include "GeoReferenceHelper.h"
+#include "Landscape.h"
 
 // Sets default values
 AGeoReferenceActor::AGeoReferenceActor()
@@ -68,10 +71,18 @@ FVector AGeoReferenceActor::ToGameCoordinate(FVector geocoordinate)
         return FVector::ZeroVector;
     }
 
-
+    // Check if world origin is offset (f.e. due OriginRebasing in WorldComposition)
+    const UWorld * World = GetWorld();
+    FVector WorldOrigin = FVector::ZeroVector;
+    if(World)
+    {
+        WorldOrigin = FVector(World->OriginLocation);
+    }
 
     UGeoCoordinate geocoord(geocoordinate.X, geocoordinate.Y, UGeoCoordinate::EPSG_WGS84);
-    FVector gamecoord = geocoord.ToGameCoordinate(*ROI);
+    FVector origincoord = geocoord.ToGameCoordinate(*ROI);
+    FVector gamecoord = origincoord - WorldOrigin;
+
 
     if(bSnapToLandscape) {
         // see if there is a landscape
@@ -111,7 +122,8 @@ FVector AGeoReferenceActor::ToGeoCoordinate(FVector gamecoordinate)
     return FVector(coord.ToFVector2DInEPSG(UGeoCoordinate::EPSG_WGS84), 0);
 }
 
-UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate) {
+UGeoCoordinate AGeoReferenceActor::CalculateGeoLocation(FVector gamecoordinate)
+{
     FVector geocoord = gamecoordinate;
 
     if(bSnapToLandscape) {
@@ -163,4 +175,19 @@ bool AGeoReferenceActor::IsGeoCoordInsideROI(FVector geocoord)
 
     UGeoCoordinate coord(geocoord.X, geocoord.Y, UGeoCoordinate::EPSG_WGS84);
     return ROI->Surrounds(coord);
+}
+
+void AGeoReferenceActor::LoadFromGeotiff(FString FilePath)
+{
+    GDALDatasetRef gdaldata = GDALHelpers::OpenRaster(FilePath, true);
+
+    if(!gdaldata){
+        UE_LOG(LogTemp,Warning,TEXT("AGeoReferenceActor: Error opening Geotiff file: %s"), *FilePath);
+        return;
+    }
+
+    ROI->InitFromGDAL(gdaldata);
+    Longitude = ROI->WGS84Coordinates.X;
+    Latitude = ROI->WGS84Coordinates.Y;
+    SizeM = ROI->SizeM;
 }

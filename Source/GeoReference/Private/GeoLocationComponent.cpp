@@ -81,6 +81,27 @@ void UGeoLocationComponent::UpdateParentActorLocation()
     }
 }
 
+FVector UGeoLocationComponent::ToGameCoordinate(float Long, float Lat)
+{
+    if (!GeoRef)
+        FindGeoReferenceActor();
+
+    FVector Location = GeoRef->ToGameCoordinate(FVector(Long, Lat, 0));
+    if (bSnapToGround) {
+        Location = SnapToGround(Location, 100000);
+    }
+    return Location;
+}
+
+FVector2D UGeoLocationComponent::ToGeoCoordinate(FVector gamecoordinate)
+{
+    if (!GeoRef)
+        FindGeoReferenceActor();
+
+    FVector geoloc = GeoRef->ToGeoCoordinate(gamecoordinate);
+    return FVector2D(geoloc);
+}
+
 void UGeoLocationComponent::FindGeoReferenceActor()
 {
     for (TObjectIterator<AGeoReferenceActor> Itr; Itr; ++Itr)
