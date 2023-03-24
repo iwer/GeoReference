@@ -1,7 +1,14 @@
-GeoReference - UE4 Plugin
-===========================
+# GeoReference - Unreal Engine Plugin
+
 
 This plugin provides a reference between game coordinates and geo-coordinates. The core of the concept is the GeoRegion which defines latitude and longitude of the world origin. Additionally a map size in meter is given to calculate border coordinates in WSG84 and UTM. This information can be used to get georeferenced objects to the correct position. GeoCoordinates are internally stored as double precision WGS84 coordinates but can be initialized from and converted to any valid EPSG coded coordinate reference system.
+
+## Compatibility
+
+* Unreal Engine 4 is supported at least with 4.27.
+* Unreal Engine 5 is supported with 5.1.
+
+## Features
 
 ### GeoReferenceActor
 Has to be placed in the world to define the GeoReference. Is used by GeoLocatedActors to calculate game-coordinates.
